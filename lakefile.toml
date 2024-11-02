@@ -1,0 +1,10 @@
+name = "tibi"
+version = "0.1.0"
+defaultTargets = ["tibi"]
+
+[[lean_lib]]
+name = "Tibi"
+
+[[lean_exe]]
+name = "tibi"
+root = "Main"
