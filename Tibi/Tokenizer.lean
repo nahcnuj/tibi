@@ -1,4 +1,5 @@
 import Tibi.Basic
+import Tibi.Tokenizer.Basic
 
 namespace Tibi
 
@@ -9,13 +10,15 @@ instance : ToString Err where
   toString
   | .Unconsumed rest => s!"\"{rest}\" was not consumed by the tokenizer"
 
-def f : String → Except Err (Token × String)
-  | s => .ok (.T s.front, s.drop 1)
+private def tokenizer (s : String) : Except Err (Token × String) :=
+  match digits s with
+  | .some (t, rest) => .ok (t, rest)
+  | .none => .error <| .Unconsumed s
 
 private def tokenizeRest (tokens : List Token) (s : String) : Except Err (List Token) :=
   if s.isEmpty then .ok tokens
   else
-    f s >>= fun (t, rest) =>
+    tokenizer s >>= fun (t, rest) =>
       if rest.length < s.length then
         tokenizeRest (tokens.concat t) rest
       else

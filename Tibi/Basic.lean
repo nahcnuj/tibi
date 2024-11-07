@@ -1,6 +1,7 @@
 inductive Token
-| T (c : Char)
+| Numeral (n : Nat)
+deriving BEq
 
 instance : ToString Token where
   toString
-  | .T c => s!"<T {c}>"
+  | .Numeral n => s!"<Numeral {n}>"
