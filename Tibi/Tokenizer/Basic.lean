@@ -14,3 +14,7 @@ def digits (s : String) : Option (Token × String) :=
 #guard digits "012" == .some (.Numeral 12, "")
 #guard digits "1abc" == .some (.Numeral 1, "abc")
 #guard digits "1.0" == .some (.Numeral 1, ".0")
+
+def choice {T : Type u} : List (String → Option (T × String)) → String → Option (T × String)
+  | []      => fun _ => .none
+  | p :: ps => fun s => p s <|> choice ps s

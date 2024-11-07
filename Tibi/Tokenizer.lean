@@ -11,7 +11,10 @@ instance : ToString Err where
   | .Unconsumed rest => s!"\"{rest}\" was not consumed by the tokenizer"
 
 private def tokenizer (s : String) : Except Err (Token × String) :=
-  match digits s with
+  let attempt := choice <| [
+    digits,
+  ]
+  match attempt s with
   | .some (t, rest) => .ok (t, rest)
   | .none => .error <| .Unconsumed s
 
