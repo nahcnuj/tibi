@@ -4,20 +4,20 @@ namespace Tibi
 `StringReader` is a structure to read strings from a stream, skipping whitespaces.
 -/
 structure StringReader where
-  stream : IO.FS.Stream
+  handle : IO.FS.Handle
   line : String
 
 namespace StringReader
 
 /--
-`StringReader.ofStream` creates a StringReader from a `IO.FS.Stream`.
+`StringReader.fromHandle creates a StringReader from a `IO.FS.Handle`.
 -/
-def ofStream (stream : IO.FS.Stream) : StringReader :=
-  { stream, line := "" }
+def fromHandle (handle : IO.FS.Handle) : StringReader :=
+  { handle, line := "" }
 
 private def fetch (reader : StringReader) : IO (Option StringReader) := do
   if reader.line.isEmpty then
-    let line ← reader.stream.getLine
+    let line ← reader.handle.getLine
     if line.isEmpty then
       return none
     else

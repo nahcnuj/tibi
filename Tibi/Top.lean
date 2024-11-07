@@ -10,5 +10,5 @@ private partial def repl (reader : StringReader) : IO Unit := do
   else
     pure ()
 
-def run (stream : IO.FS.Stream) : IO Unit := do
-  repl <| StringReader.ofStream stream
+def run (handle : IO.FS.Handle) : IO Unit := do
+  repl <| StringReader.fromHandle handle
