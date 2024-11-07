@@ -5,7 +5,6 @@ def main : List String → IO UInt32
     let file := System.FilePath.mk file
     if ← file.pathExists then
       IO.FS.withFile file IO.FS.Mode.read Tibi.run
-      return 0
     else
       IO.eprintln s!"no such file: {file}"
       return 1

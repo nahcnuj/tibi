@@ -1,14 +1,19 @@
 import Tibi.StringReader
+import Tibi.Tokenizer
 
 namespace Tibi
 
-private partial def repl (reader : StringReader) : IO Unit := do
-  if let some reader ← reader.skipSpaces then
-    let (reader, s) ← reader.readString
-    IO.println s
-    repl reader
+private partial def repl (n : Nat) (handle : IO.FS.Handle) : IO UInt32 := do
+  let line ← handle.getLine
+  if not line.isEmpty then
+    match tokenize line with
+    | .ok ts =>
+        IO.println ts
+        repl n.succ handle
+    | .error e =>
+        IO.eprintln s!"{e} at line {n}"
+        return 1
   else
-    pure ()
+    return 0
 
-def run (handle : IO.FS.Handle) : IO Unit := do
-  repl <| StringReader.fromHandle handle
+def run : IO.FS.Handle → IO UInt32 := repl 1
