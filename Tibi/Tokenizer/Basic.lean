@@ -1,5 +1,7 @@
 import Tibi.Basic
 
+namespace Tibi.Tokenizer
+
 def digits (s : String) : Option (Nat × String) :=
   let ds := s.takeWhile Char.isDigit
   if ds.length > 0 then

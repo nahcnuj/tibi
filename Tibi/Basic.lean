@@ -1,3 +1,5 @@
+namespace Tibi
+
 inductive Token
 | Numeral (n : Nat)
 deriving BEq

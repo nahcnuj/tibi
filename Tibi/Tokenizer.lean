@@ -16,10 +16,15 @@ private def transform (f : α → Token) : α × β → Option (Token × β) :=
 instance : HAndThen (String → Option (α × β)) (α → Token) (String → Option (Token × β)) where
   hAndThen attempt f := fun s => attempt s >>= transform (f ())
 
+section
+open Tokenizer
+
 private def tokenizer : String → Option (Token × String) :=
   choice <| [
     digits >> Token.Numeral,
   ]
+
+end
 
 private def tokenizeRest (tokens : List Token) (s : String) : Except Err (List Token) :=
   if s.isEmpty then .ok tokens
