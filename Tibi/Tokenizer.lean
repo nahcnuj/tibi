@@ -8,7 +8,7 @@ inductive Err
 
 instance : ToString Err where
   toString
-  | .Unconsumed rest => s!"\"{rest}\" was not consumed by the tokenizer"
+  | .Unconsumed rest => s!"\"{rest}\" was not consumed"
 
 private def transform (f : α → Token) : α × β → Option (Token × β) :=
   Option.some ∘ Prod.map f id
@@ -16,22 +16,21 @@ private def transform (f : α → Token) : α × β → Option (Token × β) :=
 instance : HAndThen (String → Option (α × β)) (α → Token) (String → Option (Token × β)) where
   hAndThen attempt f := fun s => attempt s >>= transform (f ())
 
-private def tokenizer (s : String) : Except Err (Token × String) :=
-  let tokenize := choice <| [
+private def tokenizer : String → Option (Token × String) :=
+  choice <| [
     digits >> Token.Numeral,
   ]
-  match tokenize s with
-  | .some (t, rest) => .ok (t, rest)
-  | .none => .error <| .Unconsumed s
 
 private def tokenizeRest (tokens : List Token) (s : String) : Except Err (List Token) :=
   if s.isEmpty then .ok tokens
   else
-    tokenizer s >>= fun (t, rest) =>
+    if let some (t, rest) := tokenizer s then
       if rest.length < s.length then
         tokenizeRest (tokens.concat t) rest
       else
         .error <| .Unconsumed rest
+    else
+      .error <| .Unconsumed s
 termination_by s.length
 
 def tokenize : String → Except Err (List Token) := tokenizeRest []
