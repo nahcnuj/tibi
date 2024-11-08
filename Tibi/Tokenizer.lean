@@ -10,11 +10,17 @@ instance : ToString Err where
   toString
   | .Unconsumed rest => s!"\"{rest}\" was not consumed by the tokenizer"
 
+private def transform (f : α → Token) : α × β → Option (Token × β) :=
+  Option.some ∘ Prod.map f id
+
+instance : HAndThen (String → Option (α × β)) (α → Token) (String → Option (Token × β)) where
+  hAndThen attempt f := fun s => attempt s >>= transform (f ())
+
 private def tokenizer (s : String) : Except Err (Token × String) :=
-  let attempt := choice <| [
-    digits,
+  let tokenize := choice <| [
+    digits >> Token.Numeral,
   ]
-  match attempt s with
+  match tokenize s with
   | .some (t, rest) => .ok (t, rest)
   | .none => .error <| .Unconsumed s
 
