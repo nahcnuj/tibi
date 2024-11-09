@@ -21,13 +21,13 @@ open Tokenizer
 
 private def tokenizer : String → Option (Token × String) :=
   choice <| [
-    digits >> Token.Numeral,
+    skipSpaces digits >> Token.Numeral,
   ]
 
 end
 
 private def tokenizeRest (tokens : List Token) (s : String) : Except Err (List Token) :=
-  if s.isEmpty then .ok tokens
+  if s.trimLeft.isEmpty then .ok tokens
   else
     if let some (t, rest) := tokenizer s then
       if rest.length < s.length then

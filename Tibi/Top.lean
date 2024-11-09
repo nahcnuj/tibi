@@ -11,8 +11,13 @@ private partial def repl (n : Nat) (stream : IO.FS.Stream) : IO UInt32 := do
         IO.println ts
         repl n.succ stream
     | .error e =>
-        IO.eprintln s!"{e} at line {n}"
-        return 1
+        IO.eprintln <|
+          match e with
+          | .Unconsumed s => s!"unknown tokens found at line {n}: {s}"
+        if ← stream.isTty then
+          repl n.succ stream
+        else
+          return 1
   else
     return 0
 

@@ -17,6 +17,9 @@ def digits (s : String) : Option (Nat × String) :=
 #guard digits "1abc" == .some (1, "abc")
 #guard digits "1.0" == .some (1, ".0")
 
-def choice {T : Type u} : List (String → Option (T × String)) → String → Option (T × String)
+def skipSpaces (next : String → α) : String → α :=
+  next ∘ String.trimLeft
+
+def choice {α : Type u} : List (String → Option (α × String)) → String → Option (α × String)
   | []      => fun _ => .none
   | p :: ps => fun s => p s <|> choice ps s
