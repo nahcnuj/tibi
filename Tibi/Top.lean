@@ -6,7 +6,7 @@ private partial def repl (n : Nat) (stream : IO.FS.Stream) : IO UInt32 := do
   if ← stream.isTty then IO.print s!"{n}:> "
   let line ← stream.getLine
   if not line.isEmpty then
-    match tokenize line with
+    match Tokenizer.tokenize line with
     | .ok ts =>
         IO.println ts
         repl n.succ stream
