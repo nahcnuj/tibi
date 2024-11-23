@@ -29,7 +29,6 @@ def skipSpaces (next : String → α) : String → α :=
   next ∘ String.trimLeft
 
 section
-open Combinator
 
 private def transform (f : α → Token) : α × β → Option (Token × β) :=
   Option.some ∘ Prod.map f id

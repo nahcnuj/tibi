@@ -1,4 +1,4 @@
-namespace Tibi.Combinator
+namespace Tibi
 
 def choice {α β : Type u} : List (α → Option (β × α)) → α → Option (β × α)
   | []      => fun _ => .none
