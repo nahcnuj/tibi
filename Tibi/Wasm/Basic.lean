@@ -2,14 +2,14 @@ import Tibi.Wasm.Util
 
 namespace Wasm
 
-def magic : List UInt8 := [0x00, 0x61, 0x73, 0x6D]
-def version : List UInt8 := [0x01, 0x00, 0x00, 0x00]
-
 class Encode (α : Type) where
   encode : α → List UInt8
 
 instance : Encode Nat where
   encode := Nat.encode
+
+instance : Encode (Fin n) where
+  encode := Nat.encode ∘ Fin.val
 
 instance : Encode UInt8 where
   encode n := [n]

@@ -3,22 +3,14 @@ import Tibi.Wasm
 
 namespace Tibi
 
-private def compile' : Expr → List UInt8
-| .Empty => []
+private def compile' : Expr → Wasm
+| .Empty => Wasm.empty
 | .Const n =>
-  ((Wasm.Section.Types <| Wasm.Vec.ofList <|
-        ⟨[], [Wasm.ValType.NumType .Int64]⟩
-        :: .nil) |> Wasm.Encode.encode)
-  ++ ((Wasm.Section.Funcs <| Wasm.Vec.ofList <|
-        0
-        :: .nil) |> Wasm.Encode.encode)
-  ++ ((Wasm.Section.Exports <| Wasm.Vec.ofList <|
-        ⟨"main", .Func 0⟩
-        :: .nil) |> Wasm.Encode.encode)
-  ++ ((Wasm.Section.Code <| Wasm.Vec.ofList <|
-        ⟨[], [.i64__const n]⟩
-        :: .nil) |> Wasm.Encode.encode)
+    Wasm.mk
+      [⟨[], [Wasm.ValType.NumType .Int64]⟩]
+      [0]
+      [⟨[], [.i64__const n]⟩]
+      [⟨"main", .Func 0⟩]
 
 def compile (e : Expr) : ByteArray :=
-  ByteArray.mk <| List.toArray <|
-    Wasm.magic ++ Wasm.version ++ compile' e
+  Wasm.build <| compile' e
