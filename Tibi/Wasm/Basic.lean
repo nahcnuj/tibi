@@ -67,12 +67,12 @@ instance : Encode ValType where
   encode := ValType.encode
 
 /- ## Function Types -/
-structure FuncType (n m : Nat) where
-  argTypes : Vec ValType n
-  retTypes : Vec ValType m
+structure FuncType where
+  argTypes : List ValType
+  retTypes : List ValType
 
-def FuncType.encode : FuncType n m → List UInt8
-| ⟨args, rets⟩ => [0x60] ++ Encode.encode args ++ rets.encode
+def FuncType.encode : FuncType → List UInt8
+| ⟨args, rets⟩ => [0x60] ++ Encode.encode (Vec.ofList args) ++ Encode.encode (Vec.ofList rets)
 
-instance : Encode (FuncType n m) where
+instance : Encode FuncType where
   encode := FuncType.encode

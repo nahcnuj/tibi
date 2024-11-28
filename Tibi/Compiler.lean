@@ -7,7 +7,7 @@ private def compile' : Expr → List UInt8
 | .Empty => []
 | .Const n =>
   ((Wasm.Section.Types <| Wasm.Vec.ofList <|
-        ⟨Wasm.Vec.nil, Wasm.Vec.ofList [Wasm.ValType.NumType .Int64]⟩
+        ⟨[], [Wasm.ValType.NumType .Int64]⟩
         :: .nil) |> Wasm.Encode.encode)
   ++ ((Wasm.Section.Funcs <| Wasm.Vec.ofList <|
         0

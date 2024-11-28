@@ -6,10 +6,10 @@ namespace Wasm
 /- # Module Sections -/
 
 inductive Section : UInt8 → Type
-| Types   (ts : Vec (FuncType n m) k) : Section  1
-| Funcs   (ts : Vec Nat            k) : Section  3
-| Exports (es : Vec Export         k) : Section  7
-| Code    (cs : Vec Code           k) : Section 10
+| Types   (ts : Vec FuncType k) : Section  1
+| Funcs   (ts : Vec Nat      k) : Section  3
+| Exports (es : Vec Export   k) : Section  7
+| Code    (cs : Vec Code     k) : Section 10
 
 def Section.body : Section n → List UInt8
 | Types   ts => ts.encode
