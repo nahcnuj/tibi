@@ -52,5 +52,4 @@ def run (inStream : IO.FS.Stream) : IO ByteArray :=
       | .ok (_, ts) => EStateM.throw <| IO.userError s!"some tokens unconsumed: {ts}"
       | .error e => EStateM.throw <| IO.userError s!"{e}"
     )
-  >>= fun (_ : Expr) =>
-    return compile
+  >>= pure ∘ compile
