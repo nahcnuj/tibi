@@ -18,8 +18,8 @@ def Section.body : Section n → List UInt8
 | Code    cs => cs.encode
 
 def Section.encode (s : Section n) : List UInt8 :=
-  [n]
-  ++ s.body.length.encode
+  n
+  :: s.body.length.encode
   ++ s.body
 
 instance : Encode (Section n) where

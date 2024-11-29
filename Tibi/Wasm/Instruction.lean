@@ -11,5 +11,5 @@ inductive Instr
 
 instance : Encode Instr where
   encode
-    | .i32__const i => [0x41] ++ i.toNat.encode -- FIXME integer encoding
-    | .i64__const i => [0x42] ++ i.toNat.encode -- FIXME integer encoding
+    | .i32__const i => 0x41 :: i.toNat.encode -- FIXME integer encoding
+    | .i64__const i => 0x42 :: i.toNat.encode -- FIXME integer encoding

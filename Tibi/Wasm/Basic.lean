@@ -72,7 +72,7 @@ structure FuncType where
   retTypes : List ValType
 
 def FuncType.encode : FuncType → List UInt8
-| ⟨args, rets⟩ => [0x60] ++ Encode.encode (Vec.ofList args) ++ Encode.encode (Vec.ofList rets)
+| ⟨args, rets⟩ => 0x60 :: Encode.encode (Vec.ofList args) ++ Encode.encode (Vec.ofList rets)
 
 instance : Encode FuncType where
   encode := FuncType.encode

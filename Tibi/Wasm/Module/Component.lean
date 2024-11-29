@@ -12,7 +12,7 @@ inductive ExportDesc
 | Func (idx : Nat)
 
 def ExportDesc.encode : ExportDesc → List UInt8
-| Func idx => [0x00] ++ idx.encode
+| Func idx => 0x00 :: idx.encode
 
 structure Export where
   name : String
