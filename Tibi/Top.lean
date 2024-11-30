@@ -46,10 +46,13 @@ private partial def tokenize (stream : IO.FS.Stream) (tokens : List Token) : IO 
 def run (inStream : IO.FS.Stream) : IO ByteArray :=
   tokenize inStream []
   >>= (
-    fun (ts : List Token) => do
+    fun (ts : List Token) =>
       match parse ts with
       | .ok (e, []) => pure e
       | .ok (_, ts) => EStateM.throw <| IO.userError s!"some tokens unconsumed: {ts}"
       | .error e => EStateM.throw <| IO.userError s!"{e}"
     )
-  >>= pure ∘ compile
+  >>= (
+    fun (e : Expr) =>
+      return Wasm.build <| Wasm.simple e.compile
+    )
