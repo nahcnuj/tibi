@@ -2,6 +2,7 @@ import Tibi.Compiler
 import Tibi.Interpreter
 import Tibi.Parser
 import Tibi.Tokenizer
+import Tibi.Typing
 
 namespace Tibi
 
@@ -15,10 +16,14 @@ partial def repl (stream : IO.FS.Stream) (n : Nat := 0) : IO UInt32 := do
     | .ok (t :: ts) =>
         match parse t ts with
         | .ok (e, ts) =>
-            match e.eval with
-            | .ok n    => IO.println n
-            | .error _ => IO.eprintln "Error!"
-            if !ts.isEmpty then IO.eprintln s!"some tokens unconsumed: {ts}"
+            match e.typeCheck with
+            | .found t _ =>
+                match e.eval with
+                | .ok n    => IO.println s!"- : {t} := {n}"
+                | .error _ => IO.eprintln "Error!"
+                if !ts.isEmpty then IO.eprintln s!"some tokens unconsumed: {ts}"
+            | .unknown =>
+                IO.eprintln "Type error!"
         | .error e =>
             IO.eprintln <|
               match e with
@@ -28,7 +33,7 @@ partial def repl (stream : IO.FS.Stream) (n : Nat := 0) : IO UInt32 := do
     | .error e =>
         IO.eprintln <|
           match e with
-          | .Unconsumed s => s!"unknown tokens found at line {n}: {s}"
+          | .Unconsumed s => s!"unknown tokens left: {s}"
         if ← stream.isTty then
           repl stream n.succ
         else
@@ -56,6 +61,15 @@ def run (inStream : IO.FS.Stream) : IO ByteArray :=
           | .ok (_, ts) => EStateM.throw <| IO.userError s!"some tokens unconsumed: {ts}"
           | .error e    => EStateM.throw <| IO.userError s!"{e}"
     )
+  >>= (
+    fun (e : Option Expr) => do
+      match e with
+      | .none   => return .none
+      | .some e =>
+          match e.typeCheck with
+          | .found .. => return .some e
+          | .unknown  => EStateM.throw <| IO.userError "Type error"
+  )
   >>= (
     fun (e : Option Expr) =>
       match e with

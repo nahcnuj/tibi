@@ -19,6 +19,10 @@ inductive Typ
 | Nat
 deriving DecidableEq
 
+instance : ToString Typ where
+  toString
+  | .Nat => "Nat"
+
 class RuntimeError (ε : Type _) [ToString ε] where
 
 @[default_instance]
