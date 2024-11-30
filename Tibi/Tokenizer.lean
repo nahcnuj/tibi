@@ -1,14 +1,20 @@
 import Tibi.Basic
 import Tibi.Combinator
+import Tibi.Util
 
 namespace Tibi
 
 inductive TokenizeError
 | Unconsumed (rest : String)
 
+def TokenizeError.toString : TokenizeError → String
+| .Unconsumed rest => s!"\"{rest}\" was not consumed"
+
 instance : ToString TokenizeError where
-  toString
-  | .Unconsumed rest => s!"\"{rest}\" was not consumed"
+  toString := TokenizeError.toString
+
+instance : MonadLift (ExceptT TokenizeError Id) IO where
+  monadLift := ExceptT.liftIO
 
 def digits (s : String) : Option (Nat × String) :=
   let ds := s.takeWhile Char.isDigit
@@ -55,4 +61,4 @@ private def tokenizeRest (tokens : List Token) (s : String) : Except TokenizeErr
       .error <| .Unconsumed s
 termination_by s.length
 
-def tokenize : String → Except TokenizeError (List Token) := tokenizeRest []
+def tokenize : String → ExceptT TokenizeError Id (List Token) := tokenizeRest []

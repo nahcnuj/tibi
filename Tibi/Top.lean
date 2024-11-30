@@ -41,11 +41,8 @@ private partial def tokenize' (stream : IO.FS.Stream) (tokens : List Token) : IO
   if line.isEmpty then
     return tokens
   else
-    match tokenize line with
-    | .ok ts =>
-        tokenize' stream (tokens ++ ts)
-    | .error e =>
-        EStateM.throw <| IO.userError s!"{e}"
+    tokenize line
+    >>= fun (ts : List Token) => tokenize' stream (tokens ++ ts)
 
 def run (inStream : IO.FS.Stream) : IO ByteArray :=
   tokenize' inStream []
