@@ -1,12 +1,12 @@
 import Tibi.Basic
 import Tibi.Combinator
 
-namespace Tibi.Tokenizer
+namespace Tibi
 
-inductive Err
+inductive TokenizeError
 | Unconsumed (rest : String)
 
-instance : ToString Err where
+instance : ToString TokenizeError where
   toString
   | .Unconsumed rest => s!"\"{rest}\" was not consumed"
 
@@ -43,7 +43,7 @@ private def tokenizer : String → Option (Token × String) :=
 
 end
 
-private def tokenizeRest (tokens : List Token) (s : String) : Except Err (List Token) :=
+private def tokenizeRest (tokens : List Token) (s : String) : Except TokenizeError (List Token) :=
   if s.trimLeft.isEmpty then .ok tokens
   else
     if let some (t, rest) := tokenizer s then
@@ -55,4 +55,4 @@ private def tokenizeRest (tokens : List Token) (s : String) : Except Err (List T
       .error <| .Unconsumed s
 termination_by s.length
 
-def tokenize : String → Except Err (List Token) := tokenizeRest []
+def tokenize : String → Except TokenizeError (List Token) := tokenizeRest []

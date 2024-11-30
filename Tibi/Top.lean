@@ -9,7 +9,7 @@ partial def repl (stream : IO.FS.Stream) (n : Nat := 0) : IO UInt32 := do
   if ← stream.isTty then IO.print s!"{n}:> "
   let line ← stream.getLine
   if not line.isEmpty then
-    match Tokenizer.tokenize line with
+    match tokenize line with
     | .ok [] =>
         repl stream n.succ
     | .ok (t :: ts) =>
@@ -36,19 +36,19 @@ partial def repl (stream : IO.FS.Stream) (n : Nat := 0) : IO UInt32 := do
   else
     return 0
 
-private partial def tokenize (stream : IO.FS.Stream) (tokens : List Token) : IO (List Token) := do
+private partial def tokenize' (stream : IO.FS.Stream) (tokens : List Token) : IO (List Token) := do
   let line ← stream.getLine
   if line.isEmpty then
     return tokens
   else
-    match Tokenizer.tokenize line with
+    match tokenize line with
     | .ok ts =>
-        tokenize stream (tokens ++ ts)
+        tokenize' stream (tokens ++ ts)
     | .error e =>
         EStateM.throw <| IO.userError s!"{e}"
 
 def run (inStream : IO.FS.Stream) : IO ByteArray :=
-  tokenize inStream []
+  tokenize' inStream []
   >>= (
     fun (ts : List Token) =>
       match ts with

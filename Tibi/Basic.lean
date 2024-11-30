@@ -18,3 +18,8 @@ instance : ToString Expr where
 inductive Typ
 | Nat
 deriving DecidableEq
+
+class RuntimeError (ε : Type _) [ToString ε] where
+
+@[default_instance]
+instance [ToString ε] : RuntimeError ε where
