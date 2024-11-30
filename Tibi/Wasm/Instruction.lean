@@ -1,4 +1,5 @@
 import Tibi.Wasm.Basic
+import Tibi.Wasm.Encoder
 
 namespace Wasm
 
@@ -9,7 +10,7 @@ inductive Instr
 | i32__const (i : Int) -- FIXME accept i32
 | i64__const (i : Int) -- FIXME accept i64
 
-instance : Encode Instr where
+instance : Encoder Instr where
   encode
-    | .i32__const i => 0x41 :: i.toNat.encode -- FIXME integer encoding
-    | .i64__const i => 0x42 :: i.toNat.encode -- FIXME integer encoding
+    | .i32__const i => 0x41 :: Nat.encode i.toNat -- FIXME integer encoding
+    | .i64__const i => 0x42 :: Nat.encode i.toNat -- FIXME integer encoding

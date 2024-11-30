@@ -1,42 +1,28 @@
+import Tibi.Wasm.Encoder
 import Tibi.Wasm.Util
 
 namespace Wasm
-
-class Encode (α : Type) where
-  encode : α → List UInt8
-
-instance : Encode Nat where
-  encode := Nat.encode
-
-instance : Encode (Fin n) where
-  encode := Nat.encode ∘ Fin.val
-
-instance : Encode UInt8 where
-  encode n := [n]
-
-instance : Encode String where
-  encode := String.encode
 
 /- # Convensions -/
 
 /- ## Vectors -/
 
-inductive Vec (α : Type) [Encode α]: Nat → Type
+inductive Vec (α : Type) [Encoder α]: Nat → Type
 | nil : Vec α 0
 | cons (a : α) (as : Vec α n) : Vec α n.succ
 
-def Vec.ofList [Encode α] : (v : List α) → Vec α v.length
+def Vec.ofList [Encoder α] : (v : List α) → Vec α v.length
 | []      => Vec.nil
 | a :: as => Vec.cons a (Vec.ofList as)
 
-def Vec.toList [Encode α] : Vec α n → List α
+def Vec.toList [Encoder α] : Vec α n → List α
 | nil       => []
 | cons a as => a :: as.toList
 
-def Vec.encode [Encode α] (v : Vec α n) : List UInt8 :=
-  n.encode ++ List.join (v.toList.map Encode.encode)
+def Vec.encode [Encoder α] (v : Vec α n) : List UInt8 :=
+  Nat.encode n ++ List.join (v.toList.map Encoder.encode)
 
-instance [Encode α] : Encode (Vec α n) where
+instance [Encoder α] : Encoder (Vec α n) where
   encode := Vec.encode
 
 /- # Types -/
@@ -63,7 +49,7 @@ inductive ValType
 def ValType.encode : ValType → List UInt8
 | NumType t => t.encode
 
-instance : Encode ValType where
+instance : Encoder ValType where
   encode := ValType.encode
 
 /- ## Function Types -/
@@ -72,7 +58,7 @@ structure FuncType where
   retTypes : List ValType
 
 def FuncType.encode : FuncType → List UInt8
-| ⟨args, rets⟩ => 0x60 :: Encode.encode (Vec.ofList args) ++ Encode.encode (Vec.ofList rets)
+| ⟨args, rets⟩ => 0x60 :: Encoder.encode (Vec.ofList args) ++ Encoder.encode (Vec.ofList rets)
 
-instance : Encode FuncType where
+instance : Encoder FuncType where
   encode := FuncType.encode

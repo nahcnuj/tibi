@@ -1,4 +1,5 @@
 import Tibi.Wasm.Basic
+import Tibi.Wasm.Encoder
 import Tibi.Wasm.Module.Component
 
 namespace Wasm
@@ -19,10 +20,10 @@ def Section.body : Section n → List UInt8
 
 def Section.encode (s : Section n) : List UInt8 :=
   n
-  :: s.body.length.encode
+  :: Nat.encode s.body.length
   ++ s.body
 
-instance : Encode (Section n) where
+instance : Encoder (Section n) where
   encode := Section.encode
 
 end Wasm
@@ -47,9 +48,9 @@ def Wasm.empty : Wasm := .mk [] [] [] []
 def Wasm.build (w : Wasm) : ByteArray :=
   ByteArray.mk <| List.toArray <|
     Wasm.magic ++ Wasm.version
-    ++ (Section.Types (Wasm.Vec.ofList w.types) |> Wasm.Encode.encode)
-    ++ (Section.Funcs (Wasm.Vec.ofList w.funcs) |> Wasm.Encode.encode)
-    ++ (Section.Exports (Wasm.Vec.ofList w.exports) |> Wasm.Encode.encode)
-    ++ (Section.Code (Wasm.Vec.ofList w.codes) |> Wasm.Encode.encode)
+    ++ (Section.Types (Wasm.Vec.ofList w.types) |> Wasm.Encoder.encode)
+    ++ (Section.Funcs (Wasm.Vec.ofList w.funcs) |> Wasm.Encoder.encode)
+    ++ (Section.Exports (Wasm.Vec.ofList w.exports) |> Wasm.Encoder.encode)
+    ++ (Section.Code (Wasm.Vec.ofList w.codes) |> Wasm.Encoder.encode)
 
 end
