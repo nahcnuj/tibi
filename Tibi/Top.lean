@@ -9,9 +9,11 @@ partial def repl (stream : IO.FS.Stream) (n : Nat := 0) : IO UInt32 := do
   let line ← stream.getLine
   if not line.isEmpty then
     match Tokenizer.tokenize line with
-    | .ok ts =>
-        IO.println ts
-        match parse ts with
+    | .ok [] =>
+        repl stream n.succ
+    | .ok (t :: ts) =>
+        IO.eprintln (t :: ts)
+        match parse t ts with
         | .ok (e, ts) =>
             IO.println e
             if !ts.isEmpty then IO.eprintln s!"some tokens unconsumed: {ts}"
@@ -47,12 +49,17 @@ def run (inStream : IO.FS.Stream) : IO ByteArray :=
   tokenize inStream []
   >>= (
     fun (ts : List Token) =>
-      match parse ts with
-      | .ok (e, []) => pure e
-      | .ok (_, ts) => EStateM.throw <| IO.userError s!"some tokens unconsumed: {ts}"
-      | .error e => EStateM.throw <| IO.userError s!"{e}"
+      match ts with
+      | []      => return none
+      | t :: ts =>
+          match parse t ts with
+          | .ok (e, []) => return e
+          | .ok (_, ts) => EStateM.throw <| IO.userError s!"some tokens unconsumed: {ts}"
+          | .error e    => EStateM.throw <| IO.userError s!"{e}"
     )
   >>= (
-    fun (e : Expr) =>
-      return Wasm.build <| Wasm.simple e.compile
+    fun (e : Option Expr) =>
+      match e with
+      | .none   => return Wasm.build Wasm.empty
+      | .some e => return Wasm.build <| Wasm.simple e.compile
     )
