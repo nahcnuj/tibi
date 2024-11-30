@@ -1,4 +1,5 @@
 import Tibi.Compiler
+import Tibi.Interpreter
 import Tibi.Parser
 import Tibi.Tokenizer
 
@@ -12,10 +13,11 @@ partial def repl (stream : IO.FS.Stream) (n : Nat := 0) : IO UInt32 := do
     | .ok [] =>
         repl stream n.succ
     | .ok (t :: ts) =>
-        IO.eprintln (t :: ts)
         match parse t ts with
         | .ok (e, ts) =>
-            IO.println e
+            match e.eval with
+            | .ok n    => IO.println n
+            | .error _ => IO.eprintln "Error!"
             if !ts.isEmpty then IO.eprintln s!"some tokens unconsumed: {ts}"
         | .error e =>
             IO.eprintln <|
