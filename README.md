@@ -15,12 +15,14 @@ Features:
 Tibi's interpreter and compiler can be used by either `lake exec tibi` or `./lake/build/bin/tibi` (after running `lake build`).
 This requires [Lake](https://lean-lang.org/lean4/doc/setup.html), the package manager for Lean 4.
 
-### Interpreter
+### Interpreter (REPL)
+
+Tibi can execute a Read-Eval-Print Loop (REPL).
 
 ```console
 $ lake exec tibi
 0:> 1
-- : Nat := 1
+- : Nat = 1
 1:> 
 ```
 
