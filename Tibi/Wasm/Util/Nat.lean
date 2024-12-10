@@ -1,11 +1,14 @@
 namespace Wasm
 
+/--
+`Nat.encode` encodes a Nat value, i.e. an unsigned integer, into a binary sequence of LEB128 format.
+-/
 def Nat.encode (n : Nat) : List UInt8 :=
+  let b : UInt8 := n.toUInt8 &&& 0x7F
   if n < 2 ^ 7 then
-    [n.toUInt8]
+    [b]
   else
-    let x := (n &&& 0x7F) + 0x80
-    x.toUInt8 :: Nat.encode (n >>> 7)
+    (0x80 ||| b) :: Nat.encode (n >>> 7)
 
 #guard Nat.encode 0 == [0]
 #guard Nat.encode 1 == [1]
