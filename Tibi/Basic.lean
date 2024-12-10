@@ -1,3 +1,5 @@
+import Tibi.FinInt
+
 namespace Tibi
 
 inductive Token
@@ -9,7 +11,7 @@ instance : ToString Token where
   | .Numeral n => s!"<Numeral {n}>"
 
 inductive Expr
-| Const : Fin 8 → Expr
+| Const : Fin Int64.size → Expr
 
 instance : ToString Expr where
   toString

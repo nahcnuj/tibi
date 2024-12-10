@@ -1,4 +1,5 @@
 import Tibi.Wasm.Util
+import Tibi.Wasm.Value
 
 namespace Wasm
 
@@ -21,3 +22,11 @@ instance : Encoder UInt8 where
 
 instance : Encoder String where
   encode := String.encode
+
+open Wasm.Value
+
+instance : Encoder Int32 where
+  encode := Int32.encode
+
+instance : Encoder Int64 where
+  encode := Int64.encode

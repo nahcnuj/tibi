@@ -1,4 +1,5 @@
 import Tibi.Wasm.Instruction
+import Tibi.Wasm.Value
 
 namespace Wasm
 
@@ -8,9 +9,11 @@ namespace Wasm
 
 /- ### Values -/
 
+open Wasm.Value
+
 inductive Num
-| Int32 (i : Int) -- FIXME accept only i32
-| Int64 (i : Int) -- FIXME accept only i64
+| Int32 (i : Int32)
+| Int64 (i : Int64)
 
 inductive Value
 | Num (n : Num)

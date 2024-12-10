@@ -1,7 +1,8 @@
 import Tibi.Basic
+import Tibi.FinInt
 import Tibi.Interpreter
 
 namespace Tibi
 
-inductive Eval : Expr → Except EvalError (Fin 8) → Prop
-| Const {n : Fin 8} : Eval (.Const n) (.ok n)
+inductive Eval : Expr → Except EvalError Int64 → Prop
+| Const {n : Fin Int64.size} : Eval (.Const n) (.ok <| Int64.ofFin n)
