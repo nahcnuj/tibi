@@ -39,7 +39,7 @@ abbrev Parser := ParserT Char Parser.Error Id
 
 private def digit : Parser Nat :=
   ParserT.satisfy Char.isDigit .ExpectedDigit
-  |> ParserT.map (fun c => c.toNat - '0'.toNat)
+  |>.map (fun c => c.toNat - '0'.toNat)
 
 private def nonZeroDigit : Parser Nat :=
   ParserT.diff digit (ParserT.char '0') .ExpectedNonZeroDigit
@@ -47,12 +47,31 @@ private def nonZeroDigit : Parser Nat :=
 private def digits : Parser (List Nat) :=
   ParserT.repeatGreedily digit
 
-private def parser /- : Parser Syntax.Expr -/ := nonZeroDigit
+def decimal : Parser Nat :=
+  (
+    ParserT.char '0'
+      |>.map fun _ => 0
+  )
+  <|> (
+    nonZeroDigit >> digits
+      |>.map fun (n, ns) => ns.concat n |>.foldr (fun n s => s * 10 + n) 0
+  )
+
+private def parser : ExceptT String Parser Syntax.Expr :=
+  (
+    decimal
+      |>.map fun n =>
+        if h : n < Int64.size then
+          .ok (.Const ⟨n, h⟩)
+        else
+          .error s!"Numeric literal `n` should be satisfied that 0 ≤ n < 2{Nat.toSuperscriptString 63}"
+  )
 
 abbrev parse (s : String) := parser s.data
 
 #eval parse ""
 #eval parse "0"
-#eval parse "123"
+#eval parse "1230"
 #eval parse "0120"
 #eval parse "-1"
+#eval parse "9223372036854775808"

@@ -25,7 +25,7 @@ def satisfy (cond : σ → Bool) (mkError : σ → ε) : ParserT σ ε m σ :=
     else
       error <| .UserError <| mkError c
 
-def char (ch : σ) : ParserT σ ε m σ :=
+def char (ch : outParam σ) : ParserT σ ε m σ :=
   anyChar
   >>= fun c cs =>
     if c == ch then

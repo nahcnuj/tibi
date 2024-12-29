@@ -5,8 +5,28 @@ namespace Tibi.ParserT
 variable {σ : Type} [BEq σ] [ToString σ]
 variable {m : Type → Type _} [Monad m]
 
-def orElse (p : ParserT σ ε m α) (q : ParserT σ ε m α) : ParserT σ ε m α :=
-  fun cs => p cs |>.tryCatch (fun _ => q cs)
+def hAndThen (p : ParserT σ ε m α) (q : Unit → ParserT σ ε m β) : ParserT σ ε m (α × β) :=
+  p
+  >>= fun a => q ()
+  >>= fun b => ParserT.ok (a, b)
+
+instance : HAndThen (ParserT σ ε m α) (ParserT σ ε m β) (ParserT σ ε m (α × β)) where
+  hAndThen := hAndThen
+
+-- def hOrElse (p : ParserT σ ε m α) (q : Unit → ParserT σ ε m β) : ParserT σ ε m (α ⊕ β) :=
+--   fun cs =>
+--     ExceptT.tryCatch
+--       (p cs >>= fun (a, cs) => ParserT.ok (Sum.inl a) cs)
+--       (fun _ => q () cs >>= fun (b, cs) => ParserT.ok (Sum.inr b) cs)
+
+-- instance : HOrElse (ParserT σ ε m α) (ParserT σ ε m β) (ParserT σ ε m (α ⊕ β)) where
+--   hOrElse := hOrElse
+
+def orElse (p : ParserT σ ε m α) (q : Unit → ParserT σ ε m α) : ParserT σ ε m α :=
+  fun cs => p cs |>.tryCatch (fun _ => q () cs)
+
+instance : OrElse (ParserT σ ε m α) where
+  orElse := orElse
 
 def not (p : ParserT σ ε m α) (mkError : α → ε) : ParserT σ ε m Unit :=
   fun cs => ExceptT.mk <|
