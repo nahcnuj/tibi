@@ -54,3 +54,7 @@ protected def ok (a : α) (s : List σ) : ParserT.Result σ ε m α :=
 
 protected def error (e : ParserT.Error σ ε) : ParserT.Result σ ε m α :=
   Except.error e
+
+def map (f : α → β) (p : ParserT σ ε m α) : ParserT σ ε m β :=
+  p
+  >>= fun a => pure (f a)

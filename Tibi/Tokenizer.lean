@@ -6,13 +6,11 @@ import Tibi.Util
 namespace Tibi
 
 inductive TokenizeError
--- | ExpectedEndOfInput (rest : String)
--- | SomethingWentWrong (rest : String)
+| ExpectedDigit (got : Char)
 | Unconsumed (rest : String)
 
 def TokenizeError.toString : TokenizeError → String
--- | ExpectedEndOfInput rest => s!"Expected the end of input, got \"{rest}\""
--- | SomethingWentWrong rest => s!"Something went wrong during tokenizing the rest of input: \"{rest}\""
+| ExpectedDigit got => s!"Expected a digit, got '{got}'"
 | Unconsumed rest => s!"\"{rest}\" was not consumed"
 
 instance : ToString TokenizeError where
@@ -71,6 +69,12 @@ def tokenize : String → ExceptT TokenizeError Id (List Token) := tokenizeRest 
 
 namespace v2
 
+structure Token (α : Type _) [Repr α] where
+  val : α
+
+-- inductive TypedToken : (α : Type) → Token α → Type where
+-- | Nat (val : Nat) : TypedToken Nat { val }
+
 abbrev Tokenizer := ParserT Char TokenizeError Id
 
 -- instance : Monad Tokenizer := inferInstanceAs <| Monad (ParserT Char TokenizeError Id)
@@ -83,13 +87,21 @@ abbrev Tokenizer := ParserT Char TokenizeError Id
 
 -- end Tokenizer
 
-private def tokenizer : Tokenizer Char := ParserT.char 'a'
+private def digit : Tokenizer (Token Nat) :=
+  ParserT.satisfy Char.isDigit .ExpectedDigit
+  |> ParserT.map (fun c => String.mk [c] |>.toNat!)
+  |> ParserT.map Token.mk
+
+private def tokenizer : Tokenizer (Token Nat) := digit
 
 def tokenize (s : String) := tokenizer s.data
 
-#eval tokenize ""
-#eval tokenize "abc"
-#eval tokenize "a"
+#reduce tokenize ""
+#reduce tokenize "abc"
+#reduce tokenize "a"
+#reduce tokenize "0"
+#reduce tokenize "123"
+#reduce tokenize "-1"
 
 -- #eval eof "".data
 -- #eval eof "abc".data

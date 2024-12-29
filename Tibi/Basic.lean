@@ -29,10 +29,3 @@ class RuntimeError (ε : Type _) [ToString ε] where
 
 @[default_instance]
 instance [ToString ε] : RuntimeError ε where
-
-namespace v2
-
-structure Token (α : Type _) where
-  val : α
-
-end v2
