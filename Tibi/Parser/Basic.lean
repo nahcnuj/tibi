@@ -1,39 +1,38 @@
 namespace Tibi
 
 section
-variable (σ : Type _)
+variable (σ : Type u) [BEq σ] [ToString σ]
 variable (ε : Type _) [ToString ε]
-variable (m : Type _ → Type _) [Monad m]
+variable (m : Type u → Type _) [Monad m]
 
 inductive ParserT.Error
+| ExpectedChar (want got : σ)
 | UnexpectedEndOfInput
 | UserError (e : ε)
 
-protected def ParserT.Error.toString : ParserT.Error ε → String
-| UnexpectedEndOfInput => "Unexpected the end of input"
-| UserError e          => ToString.toString e
+protected def ParserT.Error.toString : ParserT.Error σ ε → String
+| ExpectedChar want got => s!"Expected '{want}', got '{got}'"
+| UnexpectedEndOfInput  => "Unexpected the end of input"
+| UserError e           => ToString.toString e
 
-instance : ToString (ParserT.Error ε) where
-  toString := ParserT.Error.toString ε
+instance : ToString (ParserT.Error σ ε) where
+  toString := ParserT.Error.toString σ ε
 
 abbrev ParserT.Result (α : Type _) :=
-  ExceptT (ParserT.Error ε) m (α × List σ)
+  ExceptT (ParserT.Error σ ε) m (α × List σ)
 
 def ParserT (α : Type _) :=
   List σ → ParserT.Result σ ε m α
 
-instance : Coe ε (ParserT.Error ε) where
+instance : Coe ε (ParserT.Error σ ε) where
   coe := .UserError
 
 end
 
 section
 
-open ParserT (Error)
-
-variable {σ : Type _}
-variable {ε : Type _} [ToString ε]
-variable {m : Type _ → Type _} [Monad m]
+variable {σ : Type u} [BEq σ]
+variable {m : Type u → Type v} [Monad m]
 
 namespace ParserT
 
@@ -52,10 +51,10 @@ instance : Monad (ParserT σ ε m) where
   pure := ParserT.pure
   bind := ParserT.bind
 
-private def ok (a : α) (s : List σ) : ExceptT (ParserT.Error ε) m (α × List σ) :=
-  Except.ok (a, s) (ε := Error ε)
+private def ok (a : α) (s : List σ) : ParserT.Result σ ε m α :=
+  Except.ok (a, s) (ε := ParserT.Error σ ε)
 
-private def error (e : Error ε) : ExceptT (ParserT.Error ε) m (α × List σ) :=
+private def error (e : ParserT.Error σ ε) : ParserT.Result σ ε m α :=
   Except.error e
 
 -- def fail (e : ε) : ParserT σ ε m α := fun _ => throw <| .UserError e
@@ -72,10 +71,10 @@ def satisfy (cond : σ → Bool) (mkError : σ → ε) : ParserT σ ε m σ :=
     else
       error <| .UserError <| mkError c
 
-#check ExceptT
-
-
-
--- だ
--- □゙
--- ◌゙
+def char (ch : σ) : ParserT σ ε m σ :=
+  anyChar
+  >>= fun c cs =>
+    if c == ch then
+      ok c cs
+    else
+      error <| .ExpectedChar ch c

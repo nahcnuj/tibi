@@ -6,18 +6,14 @@ import Tibi.Util
 namespace Tibi
 
 inductive TokenizeError
-| ExpectedChar (want got : Char)
-| ExpectedEndOfInput (rest : String)
-| SomethingWentWrong (rest : String)
+-- | ExpectedEndOfInput (rest : String)
+-- | SomethingWentWrong (rest : String)
 | Unconsumed (rest : String)
-| UnexpectedEndOfInput
 
 def TokenizeError.toString : TokenizeError → String
-| ExpectedChar want got => s!"Expected '{want}', got '{got}'"
-| ExpectedEndOfInput rest => s!"Expected the end of input, got \"{rest}\""
-| SomethingWentWrong rest => s!"Something went wrong during tokenizing the rest of input: \"{rest}\""
+-- | ExpectedEndOfInput rest => s!"Expected the end of input, got \"{rest}\""
+-- | SomethingWentWrong rest => s!"Something went wrong during tokenizing the rest of input: \"{rest}\""
 | Unconsumed rest => s!"\"{rest}\" was not consumed"
-| UnexpectedEndOfInput => s!"Unexpected the end of input"
 
 instance : ToString TokenizeError where
   toString := TokenizeError.toString
@@ -79,37 +75,15 @@ abbrev Tokenizer := ParserT Char TokenizeError Id
 
 -- instance : Monad Tokenizer := inferInstanceAs <| Monad (ParserT Char TokenizeError Id)
 
-namespace Tokenizer
-
--- def anyChar : Tokenizer Char
--- | []      => throw <| .UserError TokenizeError.UnexpectedEndOfInput
--- | c :: cs => ParserT.anyChar c cs
+-- namespace Tokenizer
 
 -- def eof : Tokenizer Unit
 -- | [] => pure ((), [])
 -- | cs => throw <| .UserError <| .ExpectedEndOfInput <| String.mk cs
 
--- def satisfy (cond : Char → Bool) : Tokenizer Char :=
---   ParserT.satisfy cond <| .SomethingWentWrong ""
--- #check (ParserT.satisfy (· == 'a') : TokenizeError → Tokenizer Char)
-  -- >>= fun c cs =>
-  --   if cond c then
-  --     pure (c, cs)
-  --   else
-  --     throw <| .UserError <| .SomethingWentWrong <| String.mk <| c :: cs
+-- end Tokenizer
 
--- def char (ch : Char) : Tokenizer Char :=
---   anyChar
---   >>= fun c cs =>
---     if c == ch then
---       pure (ch, cs)
---     else
---       throw <| .UserError <| .ExpectedChar ch c
-
-end Tokenizer
-
-open Tokenizer -- in
-def tokenizer : Tokenizer Char := anyChar
+private def tokenizer : Tokenizer Char := char 'a'
 
 def tokenize (s : String) := tokenizer s.data
 
@@ -130,18 +104,17 @@ def parse' : Tokenizer Char := anyChar
   | .ok _ => "Ok"
   | .error _ => "Error"
 
--- def parsea := char 'a'
--- #eval parsea "".data
--- #eval parsea "abc".data
--- #eval parsea "a".data
--- #eval parsea "A".data
+def parsea : Tokenizer Char := char 'a'
+#eval parsea "".data
+#eval parsea "abc".data
+#eval parsea "a".data
+#eval parsea "A".data
 
-def parseb : Tokenizer Char := satisfy (· == 'b') (TokenizeError.ExpectedChar 'b')
-#eval parseb "".data -- .data "".data
-#eval parseb "bcd".data
-#eval parseb "b".data
-#eval parseb "B".data
-
+-- def parseb : Tokenizer Char := satisfy (· == 'b') (TokenizeError.ExpectedChar 'b')
+-- #eval parseb "".data -- .data "".data
+-- #eval parseb "bcd".data
+-- #eval parseb "b".data
+-- #eval parseb "B".data
 
 
 
