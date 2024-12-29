@@ -1,4 +1,5 @@
 import Tibi.Basic
+import Tibi.Parser.Basic
 
 namespace Tibi
 
