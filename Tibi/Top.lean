@@ -27,9 +27,7 @@ partial def repl (stream : IO.FS.Stream) (n : Nat := 0) : IO UInt32 := do
         | .error e =>
             IO.eprintln s!"Syntax Error: {e}"
     | .error e =>
-        IO.eprintln <|
-          match e with
-          | .Unconsumed ts => s!"Syntax Error: unexpected tokens: {ts}"
+        IO.eprintln s!"Syntax Error: {e}"
     repl stream n.succ
   else
     return 0
