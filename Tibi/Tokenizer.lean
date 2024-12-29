@@ -116,6 +116,11 @@ def parsea : Tokenizer Char := ParserT.char 'a'
 -- #eval parseb "b".data
 -- #eval parseb "B".data
 
+def eof : Tokenizer Unit := ParserT.eof
+#eval eof "".data
+#eval eof "a b c".data
+#eval eof "a".data
+#eval eof "A".data
 
 
 end v2

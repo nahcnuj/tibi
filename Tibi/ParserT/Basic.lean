@@ -1,27 +1,29 @@
 namespace Tibi
 
 section
-variable (σ : Type u) [BEq σ] [ToString σ]
-variable (ε : Type _) [ToString ε]
-variable (m : Type u → Type _) [Monad m]
+variable (σ : Type) [BEq σ] [ToString σ]
+variable (ε : Type) [ToString ε]
+variable (m : Type → Type _) [Monad m]
 
 inductive ParserT.Error
 | ExpectedChar (want got : σ)
+| ExpectedEndOfInput (s : List σ)
 | UnexpectedEndOfInput
 | UserError (e : ε)
 
 protected def ParserT.Error.toString : ParserT.Error σ ε → String
 | ExpectedChar want got => s!"Expected '{want}', got '{got}'"
+| ExpectedEndOfInput s  => s!"Expected EOF, got \"{String.join <| List.map ToString.toString s}\""
 | UnexpectedEndOfInput  => "Unexpected the end of input"
 | UserError e           => ToString.toString e
 
 instance : ToString (ParserT.Error σ ε) where
   toString := ParserT.Error.toString σ ε
 
-abbrev ParserT.Result (α : Type _) :=
+abbrev ParserT.Result (α : Type) :=
   ExceptT (ParserT.Error σ ε) m (α × List σ)
 
-def ParserT (α : Type _) :=
+def ParserT (α : Type) :=
   List σ → ParserT.Result σ ε m α
 
 instance : Coe ε (ParserT.Error σ ε) where
@@ -31,8 +33,8 @@ end
 
 namespace ParserT
 
-variable {σ : Type u} [BEq σ]
-variable {m : Type u → Type v} [Monad m]
+variable {σ : Type} [BEq σ]
+variable {m : Type → Type _} [Monad m]
 
 def pure (a : α) : ParserT σ ε m α := fun s => ExceptT.pure (a, s)
 
