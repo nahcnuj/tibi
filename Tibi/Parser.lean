@@ -24,10 +24,12 @@ namespace v2
 
 inductive Parser.Error
 | ExpectedDigit (got : Char)
+| ExpectedNonZeroDigit (got : Char)
 | Unconsumed (rest : String)
 
 def Parser.Error.toString : Parser.Error → String
 | ExpectedDigit got => s!"Expected a digit, got '{got}'"
+| ExpectedNonZeroDigit got => s!"Expected a non-zero digit, got '{got}'"
 | Unconsumed rest => s!"\"{rest}\" was not consumed"
 
 instance : ToString Parser.Error where
@@ -39,10 +41,13 @@ private def digit : Parser Nat :=
   ParserT.satisfy Char.isDigit .ExpectedDigit
   |> ParserT.map (fun c => c.toNat - '0'.toNat)
 
+private def nonZeroDigit : Parser Nat :=
+  ParserT.diff digit (ParserT.char '0') .ExpectedNonZeroDigit
+
 private def digits : Parser (List Nat) :=
   ParserT.repeatGreedily digit
 
-private def parser /- : Parser Syntax.Expr -/ := digits
+private def parser /- : Parser Syntax.Expr -/ := nonZeroDigit
 
 abbrev parse (s : String) := parser s.data
 
