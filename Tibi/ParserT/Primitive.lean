@@ -2,7 +2,7 @@ import Tibi.ParserT.Basic
 
 namespace Tibi.ParserT
 
-variable {σ : Type} [BEq σ]
+variable {σ : Type} [BEq σ] [ToString σ]
 variable {m : Type → Type _} [Monad m]
 
 open Tibi.ParserT (ok error)

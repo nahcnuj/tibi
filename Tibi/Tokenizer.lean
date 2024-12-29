@@ -69,8 +69,11 @@ def tokenize : String → ExceptT TokenizeError Id (List Token) := tokenizeRest 
 
 namespace v2
 
-structure Token (α : Type _) [Repr α] where
+structure Token (α : Type _) [ToString α] where
   val : α
+
+instance [ToString α] : ToString (Token α) where
+  toString t := ToString.toString t.val
 
 -- inductive TypedToken : (α : Type) → Token α → Type where
 -- | Nat (val : Nat) : TypedToken Nat { val }
@@ -92,16 +95,20 @@ private def digit : Tokenizer (Token Nat) :=
   |> ParserT.map (fun c => String.mk [c] |>.toNat!)
   |> ParserT.map Token.mk
 
-private def tokenizer : Tokenizer (Token Nat) := digit
+-- TODO reduce
+private def digits : Tokenizer (List <| Token Nat) :=
+  ParserT.repeatGreedily digit
+
+private def tokenizer : Tokenizer (List <| Token Nat) := digits
 
 def tokenize (s : String) := tokenizer s.data
 
-#reduce tokenize ""
-#reduce tokenize "abc"
-#reduce tokenize "a"
-#reduce tokenize "0"
-#reduce tokenize "123"
-#reduce tokenize "-1"
+#eval tokenize "abcd"
+#eval tokenize "abc"
+#eval tokenize "a"
+#eval tokenize "0"
+#eval tokenize "123"
+#eval tokenize "-1"
 
 -- #eval eof "".data
 -- #eval eof "abc".data
