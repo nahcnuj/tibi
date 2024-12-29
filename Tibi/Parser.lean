@@ -25,12 +25,14 @@ namespace v2
 inductive Parser.Error
 | ExpectedDigit (got : Char)
 | ExpectedNonZeroDigit (got : Char)
+| IOError (e : IO.Error)
 | Unconsumed (rest : String)
 
 def Parser.Error.toString : Parser.Error → String
-| ExpectedDigit got => s!"Expected a digit, got '{got}'"
+| ExpectedDigit got        => s!"Expected a digit, got '{got}'"
 | ExpectedNonZeroDigit got => s!"Expected a non-zero digit, got '{got}'"
-| Unconsumed rest => s!"\"{rest}\" was not consumed"
+| IOError e                => s!"IO Error: {e}"
+| Unconsumed rest          => s!"\"{rest}\" was not consumed"
 
 instance : ToString Parser.Error where
   toString := Parser.Error.toString
@@ -67,11 +69,32 @@ private def parser : ExceptT String Parser Syntax.Expr :=
           .error s!"Numeric literal `n` should be satisfied that 0 ≤ n < 2{Nat.toSuperscriptString 63}"
   )
 
-abbrev parse (s : String) := parser s.data
+-- abbrev parse (s : String) := parser s.data
 
-#eval parse ""
-#eval parse "0"
-#eval parse "1230"
-#eval parse "0120"
-#eval parse "-1"
-#eval parse "9223372036854775808"
+-- #eval parse ""
+-- #eval parse "0"
+-- #eval parse "1230"
+-- #eval parse "0120"
+-- #eval parse "-1"
+-- #eval parse "9223372036854775808"
+
+partial def parse' : (ReaderT (IO String) (ExceptT String Parser)) Syntax.Expr := do
+  fun getLine cs =>
+    match parser cs with
+    | .error .UnexpectedEndOfInput => do
+        match getLine () with
+        | .ok s _    => parse' getLine <| cs.append s.data
+        | .error e _ => Except.error <| Parser.Error.IOError e
+    | v => v
+
+#eval parse' (pure "0120") "123".data
+#eval parse' (pure "-1") "".data
+#eval parse' (pure "9223372036854775808") "".data
+#eval parse' (pure "9223372036854775808") "".data
+#eval parse' (pure "0120") "123".data
+
+def parse (stream : IO.FS.Stream) :=
+  stream.getLine >>= fun s =>
+    match s.data with
+    | [] => pure Option.none
+    | cs => pure <| Option.some <| parse' stream.getLine cs
