@@ -29,12 +29,10 @@ instance : Coe ε (ParserT.Error σ ε) where
 
 end
 
-section
+namespace ParserT
 
 variable {σ : Type u} [BEq σ]
 variable {m : Type u → Type v} [Monad m]
-
-namespace ParserT
 
 def pure (a : α) : ParserT σ ε m α := fun s => ExceptT.pure (a, s)
 
@@ -44,8 +42,6 @@ def bind (pa : ParserT σ ε m α) (f : α → ParserT σ ε m β) : ParserT σ 
     >>= fun r => match r with
       | .ok (a, s) => f a s
       | .error e   => Pure.pure (f := m) <| Except.error e
-
-end ParserT
 
 instance : Monad (ParserT σ ε m) where
   pure := ParserT.pure
