@@ -5,6 +5,9 @@ namespace Tibi.ParserT
 variable {σ : Type} [BEq σ] [ToString σ]
 variable {m : Type → Type _} [Monad m]
 
+def orElse (p : ParserT σ ε m α) (q : ParserT σ ε m α) : ParserT σ ε m α :=
+  fun cs => p cs |>.tryCatch (fun _ => q cs)
+
 def not (p : ParserT σ ε m α) (mkError : α → ε) : ParserT σ ε m Unit :=
   fun cs => ExceptT.mk <|
     p cs
