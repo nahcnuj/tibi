@@ -1,6 +1,6 @@
 import Tibi.Basic
 import Tibi.Combinator
-import Tibi.Parser
+import Tibi.ParserT
 import Tibi.Util
 
 namespace Tibi
@@ -71,7 +71,7 @@ def tokenize : String → ExceptT TokenizeError Id (List Token) := tokenizeRest 
 
 namespace v2
 
-abbrev Tokenizer' := ParserT Char TokenizeError Id
+abbrev Tokenizer := ParserT Char TokenizeError Id
 
 -- instance : Monad Tokenizer := inferInstanceAs <| Monad (ParserT Char TokenizeError Id)
 
@@ -83,7 +83,7 @@ abbrev Tokenizer' := ParserT Char TokenizeError Id
 
 -- end Tokenizer
 
-private def tokenizer : Tokenizer' Char := ParserT.char 'a'
+private def tokenizer : Tokenizer Char := ParserT.char 'a'
 
 def tokenize (s : String) := tokenizer s.data
 
@@ -95,7 +95,7 @@ def tokenize (s : String) := tokenizer s.data
 -- #eval eof "abc".data
 -- #eval eof "a".data
 
-def parse' : Tokenizer' Char := ParserT.anyChar
+def parse' : Tokenizer Char := ParserT.anyChar
 #eval parse' "".data
 #eval parse' "abc".data
 #eval parse' "a".data
@@ -104,7 +104,7 @@ def parse' : Tokenizer' Char := ParserT.anyChar
   | .ok _ => "Ok"
   | .error _ => "Error"
 
-def parsea : Tokenizer' Char := ParserT.char 'a'
+def parsea : Tokenizer Char := ParserT.char 'a'
 #eval parsea "".data
 #eval parsea "abc".data
 #eval parsea "a".data
@@ -115,7 +115,6 @@ def parsea : Tokenizer' Char := ParserT.char 'a'
 -- #eval parseb "bcd".data
 -- #eval parseb "b".data
 -- #eval parseb "B".data
-
 
 
 

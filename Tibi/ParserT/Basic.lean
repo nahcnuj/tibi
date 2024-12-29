@@ -47,30 +47,8 @@ instance : Monad (ParserT σ ε m) where
   pure := ParserT.pure
   bind := ParserT.bind
 
-private def ok (a : α) (s : List σ) : ParserT.Result σ ε m α :=
+protected def ok (a : α) (s : List σ) : ParserT.Result σ ε m α :=
   Except.ok (a, s) (ε := ParserT.Error σ ε)
 
-private def error (e : ParserT.Error σ ε) : ParserT.Result σ ε m α :=
+protected def error (e : ParserT.Error σ ε) : ParserT.Result σ ε m α :=
   Except.error e
-
--- def fail (e : ε) : ParserT σ ε m α := fun _ => throw <| .UserError e
-
-def anyChar : ParserT σ ε m σ
-| []      => error ParserT.Error.UnexpectedEndOfInput
-| c :: cs => ok c cs
-
-def satisfy (cond : σ → Bool) (mkError : σ → ε) : ParserT σ ε m σ :=
-  anyChar
-  >>= fun c cs =>
-    if cond c then
-      ok c cs
-    else
-      error <| .UserError <| mkError c
-
-def char (ch : σ) : ParserT σ ε m σ :=
-  anyChar
-  >>= fun c cs =>
-    if c == ch then
-      ok c cs
-    else
-      error <| .ExpectedChar ch c
