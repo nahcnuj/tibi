@@ -1,6 +1,6 @@
 import Tibi.FinInt
 
-namespace Tibi.Syntax
+namespace Tibi
 
 inductive Expr
 | Const : Fin Int64.size → Expr

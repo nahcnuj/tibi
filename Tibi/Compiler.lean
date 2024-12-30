@@ -1,4 +1,5 @@
 import Tibi.Basic
+import Tibi.Syntax
 import Tibi.Wasm
 
 namespace Tibi

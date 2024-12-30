@@ -7,7 +7,7 @@ def main : List String → IO UInt32
     let file := System.FilePath.mk file
     if ← file.pathExists then
       try
-        let bin ← IO.FS.withFile file IO.FS.Mode.read (Tibi.run ∘ IO.FS.Stream.ofHandle)
+        let bin ← IO.FS.withFile file IO.FS.Mode.read (Tibi.v2.run ∘ IO.FS.Stream.ofHandle)
         let dest ← IO.getStdout
         dest.write bin
         return 0

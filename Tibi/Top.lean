@@ -67,3 +67,22 @@ def run (inStream : IO.FS.Stream) : IO ByteArray :=
       | .none   => return Wasm.build Wasm.empty
       | .some e => return Wasm.build <| Wasm.simple e.compile
     )
+
+def v2.run (inStream : IO.FS.Stream) : IO ByteArray :=
+  parse inStream
+  >>= (
+    fun r =>
+      match r with
+      | .none                       => return none
+      | .some <| .ok (.ok expr, []) => return some expr
+      | .some <| .ok (.error e, []) => .throw s!"Error: {e}"
+      | .some <| .ok (_,        cs) => .throw s!"Syntax Error: Unexpected tokens: {String.mk cs}"
+      | .some <| .error e           => .throw e.toString
+  )
+  >>= (
+    pure ∘ fun (e : Option Expr) =>
+      match e with
+      | .none   => Wasm.empty
+      | .some e => Wasm.simple e.compile
+  )
+  >>= pure ∘ Wasm.build

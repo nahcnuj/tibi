@@ -59,7 +59,7 @@ def decimal : Parser Nat :=
       |>.map fun (n, ns) => ns.concat n |>.foldr (fun n s => s * 10 + n) 0
   )
 
-private def parser : ExceptT String Parser Syntax.Expr :=
+private def parser : ExceptT String Parser Expr :=
   (
     decimal
       |>.map fun n =>
@@ -78,7 +78,7 @@ private def parser : ExceptT String Parser Syntax.Expr :=
 -- #eval parse "-1"
 -- #eval parse "9223372036854775808"
 
-partial def parse' : (ReaderT (IO String) (ExceptT String Parser)) Syntax.Expr := do
+partial def parse' : (ReaderT (IO String) (ExceptT String Parser)) Expr := do
   fun getLine cs =>
     match parser cs with
     | .error .UnexpectedEndOfInput => do
