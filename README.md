@@ -23,6 +23,7 @@ Tibi can execute a Read-Eval-Print Loop (REPL).
 $ lake exec tibi
 0:> 42
 - : Int = 42
+1:>
 ```
 
 ### Compiler
