@@ -4,24 +4,6 @@ import Tibi.Syntax
 
 namespace Tibi
 
-inductive ParseError
-| Err (s : String)
-| Unimplemented -- XXX
-
-instance : ToString ParseError where
-  toString
-    | .Err s => s
-    | .Unimplemented => "Unimplemented"
-
-def parse : Token → List Token → Except ParseError (Expr × List Token)
-| .Numeral n, ts =>
-    if h : n < 2^63 then
-      .ok (.Const ⟨n, h⟩, ts)
-    else
-      .error <| .Err s!"violate n < 2⁶³: n = {n}"
-
-namespace v2
-
 inductive Parser.Error
 | ExpectedDigit (got : Char)
 | ExpectedNonZeroDigit (got : Char)
@@ -69,15 +51,6 @@ private def parser : ExceptT String Parser Expr :=
           .error s!"Numeric literal `n` should be satisfied that 0 ≤ n < 2{Nat.toSuperscriptString 63}"
   )
 
--- abbrev parse (s : String) := parser s.data
-
--- #eval parse ""
--- #eval parse "0"
--- #eval parse "1230"
--- #eval parse "0120"
--- #eval parse "-1"
--- #eval parse "9223372036854775808"
-
 partial def parse' : (ReaderT (IO String) (ExceptT String Parser)) Expr := do
   fun getLine cs =>
     match parser cs with
@@ -87,11 +60,11 @@ partial def parse' : (ReaderT (IO String) (ExceptT String Parser)) Expr := do
         | .error e _ => Except.error <| Parser.Error.IOError e
     | v => v
 
-#eval parse' (pure "0120") "123".data
-#eval parse' (pure "-1") "".data
-#eval parse' (pure "9223372036854775808") "".data
-#eval parse' (pure "9223372036854775808") "".data
-#eval parse' (pure "0120") "123".data
+-- #eval parse' (pure "0120") "123".data
+-- #eval parse' (pure "-1") "".data
+-- #eval parse' (pure "9223372036854775808") "".data
+-- #eval parse' (pure "9223372036854775808") "".data
+-- #eval parse' (pure "0120") "123".data
 
 def parse (stream : IO.FS.Stream) :=
   stream.getLine >>= fun s =>
