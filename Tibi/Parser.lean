@@ -51,7 +51,7 @@ private def parser : ExceptT String Parser Expr :=
           .error s!"Numeric literal `n` should be satisfied that 0 ≤ n < 2{Nat.toSuperscriptString 63}"
   )
 
-partial def parse' : (ReaderT (IO String) (ExceptT String Parser)) Expr := do
+private partial def parse' : (ReaderT (IO String) (ExceptT String Parser)) Expr := do
   fun getLine cs =>
     match parser cs with
     | .error .UnexpectedEndOfInput => do
@@ -67,12 +67,12 @@ partial def parse' : (ReaderT (IO String) (ExceptT String Parser)) Expr := do
 -- #eval parse' (pure "0120") "123".data
 
 def parse (stream : IO.FS.Stream) :=
-  stream.getLine >>= fun s =>
+  stream.getLine >>= pure ∘ fun s =>
     match s.data with
-    | [] => pure Option.none
-    | cs => pure <| Option.some <| parse' stream.getLine cs
+    | [] => none
+    | cs => some <| parse' stream.getLine cs
 
 def parseLine (line : String) :=
-  match line.trimRight.data with
-  | [] => Option.none
-  | cs => Option.some <| parse' (pure "") cs
+  match line.data with
+  | [] => none
+  | cs => some <| parse' (pure "") cs
