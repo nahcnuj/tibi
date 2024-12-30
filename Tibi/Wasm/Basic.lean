@@ -20,7 +20,7 @@ def Vec.toList [Encoder α] : Vec α n → List α
 | cons a as => a :: as.toList
 
 def Vec.encode [Encoder α] (v : Vec α n) : List UInt8 :=
-  Nat.encode n ++ List.join (v.toList.map Encoder.encode)
+  Nat.encode n ++ List.flatten (v.toList.map Encoder.encode)
 
 instance [Encoder α] : Encoder (Vec α n) where
   encode := Vec.encode
