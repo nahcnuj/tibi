@@ -7,12 +7,8 @@ theorem HasType.det (h₁ : HasType e t₁) (h₂ : HasType e t₂) : t₁ = t�
 
 theorem Expr.typeCheck_correct {e : Expr}
   (ht : HasType e ty)
-  (hr : e.typeCheck ≠ .unknown)
 : e.typeCheck = .found ty ht
-:=
-  match hr' : e.typeCheck with
-  | .found _ ht' => HasType.det ht ht' ▸ rfl
-  | .unknown     => absurd hr' hr
+:= rfl
 
 theorem Expr.typeCheck_complete {e : Expr} : e.typeCheck = .unknown → ¬ HasType e ty := by
   simp [Expr.typeCheck]
