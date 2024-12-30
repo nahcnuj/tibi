@@ -92,6 +92,10 @@ When Tibi expressions are compiled into WebAssembly (Wasm) binaries,
 the semantics of Tibi must align with [the operational semantics of Wasm](https://webassembly.github.io/spec/core/exec/index.html) to ensure consistency.
 `Expr.compile_correct` gives a proof of the following statement:
 ```math
-\forall D \in [\vdash e \Downarrow r]. {\mathop{\mathtt{Expr.compile}}(e)\ \mathit{instr}^*} \hookrightarrow {(\mathop{\mathsf{i64.const}} r)\ \mathit{instr}^*},
+\forall e, r.
+    \vdash e \Downarrow r \implies
+    \mathop{\mathtt{Expr.compile}}(e)\ \mathit{instr}^*
+        \hookrightarrow (\mathop{\mathsf{i64.const}} r)\ \mathit{instr}^*
+,
 ```
-where "$`D \in [\vdash e \Downarrow r]`$" means that $D$ is a derivation of $`\vdash e \Downarrow r`$ and $\mathit{instr}^*$ is a continuation.
+where "$`D \in [\vdash e \Downarrow r]`$" means that $D$ is a derivation of $`\vdash e \Downarrow r`$, and $\mathit{instr}^*$ is a continuation.
