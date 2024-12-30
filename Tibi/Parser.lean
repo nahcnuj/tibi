@@ -98,3 +98,8 @@ def parse (stream : IO.FS.Stream) :=
     match s.data with
     | [] => pure Option.none
     | cs => pure <| Option.some <| parse' stream.getLine cs
+
+def parseLine (line : String) :=
+  match line.trimRight.data with
+  | [] => Option.none
+  | cs => Option.some <| parse' (pure "") cs
