@@ -98,4 +98,4 @@ the semantics of Tibi must align with [the operational semantics of Wasm](https:
         \hookrightarrow (\mathop{\mathsf{i64.const}} r)\ \mathit{instr}^*
 ,
 ```
-where "$`D \in [\vdash e \Downarrow r]`$" means that $D$ is a derivation of $`\vdash e \Downarrow r`$, and $\mathit{instr}^*$ is a continuation.
+where $\mathit{instr}^*$ is a continuation.
