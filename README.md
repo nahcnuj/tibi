@@ -21,9 +21,8 @@ Tibi can execute a Read-Eval-Print Loop (REPL).
 
 ```console
 $ lake exec tibi
-0:> 1
-- : Nat = 1
-1:> 
+0:> 42
+- : Int = 42
 ```
 
 ### Compiler
@@ -99,3 +98,25 @@ the semantics of Tibi must align with [the operational semantics of Wasm](https:
 ,
 ```
 where $\mathit{instr}^*$ is a continuation.
+
+## Language Specification
+
+### Syntax
+
+```ebnf
+non-zero-digit = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+         digit = "0" | non-zero-digit ;
+    nat-number = "0"
+               | non-zero-digit , { digit } ;
+
+          sign = "+" | "-" ;
+    int-number = sign, nat-number ;
+
+          expr = nat-number
+               | int-number ;
+```
+
+<!--
+### Semantics
+
+-->

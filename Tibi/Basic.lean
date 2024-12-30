@@ -10,14 +10,6 @@ instance : ToString Token where
   toString
   | .Numeral n => s!"<Numeral {n}>"
 
-inductive Typ
-| Nat
-deriving DecidableEq
-
-instance : ToString Typ where
-  toString
-  | .Nat => "Nat"
-
 class RuntimeError (ε : Type _) [ToString ε] where
 
 @[default_instance]

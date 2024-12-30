@@ -4,8 +4,18 @@ import Tibi.Util
 
 namespace Tibi
 
+inductive Typ
+| Int
+deriving DecidableEq
+
+def Typ.toString : Typ → String
+| .Int => "Int"
+
+instance : ToString Typ where
+  toString := Typ.toString
+
 inductive HasType : Expr → Typ → Prop
-| Nat {n : Fin Int64.size} : HasType (.Const n) .Nat
+| Int {n : Int64} : HasType (.Const n) .Int
 
 def Expr.typeCheck : (e : Expr) → {{ t | HasType e t }}
-| .Const _ => .found .Nat .Nat
+| .Const _ => .found .Int .Int
