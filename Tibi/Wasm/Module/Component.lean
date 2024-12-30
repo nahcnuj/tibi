@@ -36,7 +36,7 @@ instance : Encoder (Nat × ValType) where
   | ⟨n, t⟩ => Nat.encode n ++ t.encode
 
 def Code.func : Code → List UInt8
-| ⟨locals, expr⟩ => (Vec.ofList locals).encode ++ List.join (expr.map Encoder.encode) ++ [0x0B]
+| ⟨locals, expr⟩ => (Vec.ofList locals).encode ++ List.flatten (expr.map Encoder.encode) ++ [0x0B]
 
 def Code.encode (c : Code) : List UInt8 :=
   Nat.encode c.func.length ++ c.func
