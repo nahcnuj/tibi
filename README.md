@@ -65,3 +65,33 @@ To execute this, you can use the following HTML:
 ```
 
 You can see the returned integer in the `pre` element.
+
+## Features
+
+### Statically Typed
+
+_I will implement a type-inference algorithm._
+
+### Formally Verified
+
+<!--
+#### Type Safety
+
+Tibi has a proof of type safety, i.e., every expression $e$ evaluates to a value $v$ and not an error if the expression $e$ is typable with a type $`\tau`$:
+```math
+\forall e. {\vdash e : \tau} \land {\vdash e \Downarrow r} \implies \text{$r$ is not an error.}
+```
+
+In Tibi, `Expr.typeCheck e` gives the type $`\tau`$ and the derivation of $`\vdash e : \tau`$, and
+`Expr.eval e` gives the result $r$ and the derivation of $`\vdash e \Downarrow r`$.
+
+#### Semantic Consistency
+-->
+
+When Tibi expressions are compiled into WebAssembly (Wasm) binaries,
+the semantics of Tibi must align with [the operational semantics of Wasm](https://webassembly.github.io/spec/core/exec/index.html) to ensure consistency.
+`Expr.compile_correct` gives a proof of the following statement:
+```math
+\forall D \in [\vdash e \Downarrow r]. {\mathop{\mathtt{Expr.compile}}(e)\ \mathit{instr}^*} \hookrightarrow {(\mathop{\mathsf{i64.const}} r)\ \mathit{instr}^*},
+```
+where "$`D \in [\vdash e \Downarrow r]`$" means that $D$ is a derivation of $`\vdash e \Downarrow r`$ and $\mathit{instr}^*$ is a continuation.
