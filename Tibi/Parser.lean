@@ -21,9 +21,18 @@ instance : ToString Parser.Error where
 
 abbrev Parser := ParserT Char Parser.Error Id
 
+private def ws : Parser Unit :=
+  (
+    ParserT.repeatGreedily <|
+      ParserT.satisfy (fun c => c == ' ' || c == '\n' || c == '\r' || c == '\t' ) .ExpectedDigit
+  ) |>.map fun _ => ()
+
+private def keyword (s : String) : Parser Unit :=
+  s.data.map ParserT.char |>.foldl (fun r p => r >>= fun _ => p |>.map fun _ => ()) (.ok ())
+
 private def digit : Parser Nat :=
   ParserT.satisfy Char.isDigit .ExpectedDigit
-  |>.map (fun c => c.toNat - '0'.toNat)
+    |>.map fun c => c.toNat - '0'.toNat
 
 private def nonZeroDigit : Parser Nat :=
   ParserT.diff digit (ParserT.char '0') .ExpectedNonZeroDigit
@@ -56,16 +65,16 @@ private def intNumber : Parser Int :=
 
 private def parser : ExceptT String Parser Expr :=
   (
-    natNumber
-      |>.map fun n =>
+    natNumber >> ws -- >> ParserT.optional ((ParserT.char '@' : Parser _) >> keyword "Int" >> ws)
+      |>.map fun (n, _) =>
         if h : n < Int64.size then
           .ok <| .Const <| Int64.ofFin ⟨n, h⟩
         else
           .error s!"Numeric literal `n` should be satisfied that 0 ≤ n < 2{Nat.toSuperscriptString 63}"
   )
   <|> (
-    intNumber
-      |>.map fun n =>
+    intNumber >> ws -- >> ParserT.optional ((ParserT.char '@' : Parser _) >> keyword "Int" >> ws)
+      |>.map fun (n, _) =>
         if h : (-Int64.size : Int) <= n ∧ n < Int64.size then
           .ok <| .Const <| Int64.mk ⟨n, h.right, h.left⟩
         else

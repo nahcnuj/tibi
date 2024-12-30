@@ -105,16 +105,18 @@ where $\mathit{instr}^*$ is a continuation.
 ### Syntax
 
 ```ebnf
+            ws = { " " | "\n" | "\r" | "\t" } ;
+
 non-zero-digit = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
          digit = "0" | non-zero-digit ;
     nat-number = "0"
                | non-zero-digit , { digit } ;
 
           sign = "+" | "-" ;
-    int-number = sign, nat-number ;
+    int-number = sign , nat-number ;
 
-          expr = nat-number
-               | int-number ;
+          expr = nat-number , ws
+               | int-number , ws;
 ```
 
 <!--
