@@ -66,7 +66,7 @@ private def parser : ExceptT String Parser Expr :=
   <|> (
     intNumber
       |>.map fun n =>
-        if h : -(Int64.size : Int) <= n ∧ n < Int64.size then
+        if h : (-Int64.size : Int) <= n ∧ n < Int64.size then
           .ok <| .Const <| Int64.mk ⟨n, h.right, h.left⟩
         else
           .error s!"Integer literal `n` should be satisfied that -2{Nat.toSuperscriptString 63} ≤ n < 2{Nat.toSuperscriptString 63}"
