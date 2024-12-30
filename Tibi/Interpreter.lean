@@ -1,5 +1,6 @@
 import Tibi.Basic
 import Tibi.FinInt
+import Tibi.Syntax
 
 namespace Tibi
 
