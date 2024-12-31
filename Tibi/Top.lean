@@ -16,7 +16,7 @@ partial def repl (stream : IO.FS.Stream) (n : Nat := 0) : IO UInt32 := do
           | .found t _ =>
               match expr.eval with
               | .found (.ok v) _    => IO.println s!"- : {t} = {v}"
-              | .found (.error e) _ => IO.eprintln s!"Runtime Error: {e}"
+              | .found (.error _) _ => panic! "TODO: prove that this branch cannot be reached (type-safe)"
               | .unknown            => panic! "TODO: prove that this branch cannot be reached (type-safe)"
           | .unknown =>
               IO.eprintln "Type Error"
