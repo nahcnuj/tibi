@@ -66,6 +66,7 @@ To execute this, you can use the following HTML:
 
 You can see the returned integer in the `pre` element.
 
+<!--
 ## Features
 
 ### Statically Typed
@@ -86,7 +87,7 @@ In Tibi, `Expr.typeCheck e` gives the type $`\tau`$ and the derivation of $`\vda
 `Expr.eval e` gives the result $r$ and the derivation of $`\vdash e \Downarrow r`$.
 
 #### Semantic Consistency
--->
+-/->
 
 When Tibi expressions are compiled into WebAssembly (Wasm) binaries,
 the semantics of Tibi must align with [the operational semantics of Wasm](https://webassembly.github.io/spec/core/exec/index.html) to ensure consistency.
@@ -99,6 +100,7 @@ the semantics of Tibi must align with [the operational semantics of Wasm](https:
 ,
 ```
 where $\mathit{instr}^*$ is a continuation.
+-->
 
 ## Language Specification
 

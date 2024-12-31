@@ -3,7 +3,7 @@ import Tibi.FinInt
 namespace Tibi
 
 inductive Expr
-| Const : Int64 → Expr
+| Const : Int → Expr
 
 instance : ToString Expr where
   toString

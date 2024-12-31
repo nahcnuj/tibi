@@ -6,14 +6,21 @@ theorem HasType.det (h₁ : HasType e t₁) (h₂ : HasType e t₂) : t₁ = t�
   cases h₁ <;> cases h₂ <;> rfl
 
 theorem Expr.typeCheck_correct {e : Expr}
-  (ht : HasType e ty)
-: e.typeCheck = .found ty ht
-:= rfl
+: (ht : HasType e ty) → e.typeCheck = .found ty ht
+| .Int64 (n := n) hLt hGe =>
+    have := eq_true <| And.intro (ge_iff_le.mp hGe) hLt
+    dite_cond_eq_true this
 
-theorem Expr.typeCheck_complete {e : Expr} : e.typeCheck = .unknown → ¬ HasType e ty := by
-  simp [Expr.typeCheck]
-  -- induction e with simp [Expr.typeCheck]
-  -- | _ => sorry
+theorem Expr.typeCheck_complete {e : Expr}
+: e.typeCheck = .unknown → ¬ HasType e ty
+:= by
+  dsimp [Expr.typeCheck]
+  intro h (ht : HasType e ty)
+  match ht with
+  | .Int64 hLt hGe =>
+      have := eq_true <| And.intro (ge_iff_le.mp hGe) hLt
+      have := h ▸ dite_cond_eq_true this
+      exact Maybe.noConfusion this
 
 instance (e : Expr) (t : Typ) : Decidable (HasType e t) :=
   match h : e.typeCheck with

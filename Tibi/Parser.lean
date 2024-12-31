@@ -63,25 +63,20 @@ private def intNumber : Parser Int :=
         | _ => sgn n
   )
 
-private def parser : ExceptT String Parser Expr :=
+private def parser : Parser Expr :=
   (
     natNumber >> ws -- >> ParserT.optional ((ParserT.char '@' : Parser _) >> keyword "Int" >> ws)
-      |>.map fun (n, _) =>
-        if h : n < Int64.size then
-          .ok <| .Const <| Int64.ofFin ⟨n, h⟩
-        else
-          .error s!"Numeric literal `n` should be satisfied that 0 ≤ n < 2{Nat.toSuperscriptString 63}"
+      |>.map fun (n, _) => .Const n
   )
   <|> (
     intNumber >> ws -- >> ParserT.optional ((ParserT.char '@' : Parser _) >> keyword "Int" >> ws)
-      |>.map fun (n, _) =>
-        if h : (-Int64.size : Int) <= n ∧ n < Int64.size then
-          .ok <| .Const <| Int64.mk ⟨n, h.right, h.left⟩
-        else
-          .error s!"Integer literal `n` should be satisfied that -2{Nat.toSuperscriptString 63} ≤ n < 2{Nat.toSuperscriptString 63}"
+      |>.map fun (n, _) => .Const n
   )
 
-private partial def parse' : (ReaderT (IO String) (ExceptT String Parser)) Expr := do
+instance : Inhabited (Parser Expr) where
+  default := parser
+
+private partial def parse' : ReaderT (IO String) Parser Expr := do
   fun getLine cs =>
     match parser cs with
     | .error .UnexpectedEndOfInput => do
