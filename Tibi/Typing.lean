@@ -20,7 +20,7 @@ inductive HasType : Expr → Typ → Prop
 
 def Expr.typeCheck : (e : Expr) → {{ t | HasType e t }}
 | .Const n =>
-    if h : (-Int64.size : Int) ≤ n ∧ n < Int64.size then
+    if h : -Int64.size ≤ n ∧ n < Int64.size then
       .found .Int64 <| .Int64 h.right h.left
     else
       .unknown
