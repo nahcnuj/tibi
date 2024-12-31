@@ -1,4 +1,3 @@
-import Tibi.Basic
 import Tibi.ParserT
 import Tibi.Syntax
 
