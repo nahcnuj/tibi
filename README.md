@@ -90,31 +90,29 @@ non-zero-digit = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
 
 -->
 
-## Formally Verification
+## Formal Verification
 
 ### Type Safety
 
-[`Tibi.type_safe`](./Tibi/Props/Typing.lean):
+If Tibi's expressions are typable, their evaluation succeeds and evaluates in a value of the corresponding type.
+[`Tibi.type_safe`](./Tibi/Props/Typing.lean) provides proof of the following statement:
 ```math
-\forall e \colon \mathrm{Expr}, \tau \colon \mathrm{Type}, r \colon \mathrm{Result}.~
+\forall e \in \mathrm{Expr}.~\forall \tau \in \mathrm{Type}.~\forall r \in \mathrm{Result}.~
 \vdash e : \tau \land \vdash e \Downarrow r \implies \exists v \colon \tau .~ r \equiv v,
 ```
 where
-- $\vdash e : \tau$ represents [`Tibi.HasType e τ`](./Tibi/Typing.lean), and
-- $\vdash e \Downarrow r$ represents [`Tibi.Eval e r`](./Tibi/Semantics.lean),
+- $\vdash e : \tau$ denotes (or, is implemented in) [`Tibi.HasType e τ`](./Tibi/Typing.lean), and
+- $\vdash e \Downarrow r$ denotes (or, is implemented in) [`Tibi.Eval e r`](./Tibi/Semantics.lean),
 
-<!--
 ### Semantic Consistency
 
-When Tibi expressions are compiled into WebAssembly (Wasm) binaries,
-the semantics of Tibi must align with [the operational semantics of Wasm](https://webassembly.github.io/spec/core/exec/index.html) to ensure consistency.
-`Expr.compile_correct` gives a proof of the following statement:
+When expressions in Tibi that are typable are compiled into Wasm binaries,
+the semantics of Tibi must align with [the semantics of Wasm](https://webassembly.github.io/spec/core/exec/index.html) to ensure consistency.
+[`Wasm.Reduction.of_has_type_of_eval_ok_of_compile_ok`](./Tibi/Props/Compiler.lean) provides proof of the following statement:
 ```math
-\forall e, r.
-    \vdash e \Downarrow r \implies
-    \mathop{\mathtt{Expr.compile}}(e)\ \mathit{instr}^*
-        \hookrightarrow (\mathop{\mathsf{i64.const}} r)\ \mathit{instr}^*
+\forall e \in \mathrm{Expr}.~\forall \tau \in \mathrm{Type}.~\forall v \colon \tau.~
+\vdash e \colon \tau \land \vdash e \Downarrow v
+\implies \mathop{\mathtt{Expr.compile}}(e)~\mathit{instr}^* \hookrightarrow (\mathop{\mathsf{i64.const}} v)~\mathit{instr}^*
 ,
 ```
 where $\mathit{instr}^*$ is a continuation.
--->
