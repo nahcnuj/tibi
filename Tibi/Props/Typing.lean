@@ -1,3 +1,4 @@
+import Tibi.Semantics
 import Tibi.Typing
 
 namespace Tibi
@@ -30,3 +31,9 @@ instance (e : Expr) (t : Typ) : Decidable (HasType e t) :=
       else
         isFalse fun ht => heq (HasType.det ht ht')
   | .unknown => isFalse (Expr.typeCheck_complete h)
+
+theorem type_safe {e : Expr}
+: HasType e t → Eval e r → ∃ v, r = .ok v
+| .Int64 hLt hGe, .Const ..      => ⟨Int64.mk ⟨_, hLt, hGe⟩, rfl⟩
+| .Int64 hLt _,   .ConstErr_lt h => absurd hLt h
+| .Int64 _   hGe, .ConstErr_ge h => absurd hGe h

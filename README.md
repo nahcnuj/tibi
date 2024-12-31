@@ -66,42 +66,6 @@ To execute this, you can use the following HTML:
 
 You can see the returned integer in the `pre` element.
 
-<!--
-## Features
-
-### Statically Typed
-
-_I will implement a type-inference algorithm._
-
-### Formally Verified
-
-<!--
-#### Type Safety
-
-Tibi has a proof of type safety, i.e., every expression $e$ evaluates to a value $v$ and not an error if the expression $e$ is typable with a type $`\tau`$:
-```math
-\forall e. {\vdash e : \tau} \land {\vdash e \Downarrow r} \implies \text{$r$ is not an error.}
-```
-
-In Tibi, `Expr.typeCheck e` gives the type $`\tau`$ and the derivation of $`\vdash e : \tau`$, and
-`Expr.eval e` gives the result $r$ and the derivation of $`\vdash e \Downarrow r`$.
-
-#### Semantic Consistency
--/->
-
-When Tibi expressions are compiled into WebAssembly (Wasm) binaries,
-the semantics of Tibi must align with [the operational semantics of Wasm](https://webassembly.github.io/spec/core/exec/index.html) to ensure consistency.
-`Expr.compile_correct` gives a proof of the following statement:
-```math
-\forall e, r.
-    \vdash e \Downarrow r \implies
-    \mathop{\mathtt{Expr.compile}}(e)\ \mathit{instr}^*
-        \hookrightarrow (\mathop{\mathsf{i64.const}} r)\ \mathit{instr}^*
-,
-```
-where $\mathit{instr}^*$ is a continuation.
--->
-
 ## Language Specification
 
 ### Syntax
@@ -124,4 +88,33 @@ non-zero-digit = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
 <!--
 ### Semantics
 
+-->
+
+## Formally Verification
+
+### Type Safety
+
+[`Tibi.type_safe`](./Tibi/Props/Typing.lean):
+```math
+\forall e \colon \mathrm{Expr}, \tau \colon \mathrm{Type}, r \colon \mathrm{Result}.~
+\vdash e : \tau \land \vdash e \Downarrow r \implies \exists v \colon \tau .~ r \equiv v,
+```
+where
+- $\vdash e : \tau$ represents [`Tibi.HasType e τ`](./Tibi/Typing.lean), and
+- $\vdash e \Downarrow r$ represents [`Tibi.Eval e r`](./Tibi/Semantics.lean),
+
+<!--
+### Semantic Consistency
+
+When Tibi expressions are compiled into WebAssembly (Wasm) binaries,
+the semantics of Tibi must align with [the operational semantics of Wasm](https://webassembly.github.io/spec/core/exec/index.html) to ensure consistency.
+`Expr.compile_correct` gives a proof of the following statement:
+```math
+\forall e, r.
+    \vdash e \Downarrow r \implies
+    \mathop{\mathtt{Expr.compile}}(e)\ \mathit{instr}^*
+        \hookrightarrow (\mathop{\mathsf{i64.const}} r)\ \mathit{instr}^*
+,
+```
+where $\mathit{instr}^*$ is a continuation.
 -->
