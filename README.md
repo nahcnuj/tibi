@@ -101,8 +101,8 @@ If Tibi's expressions are typable, their evaluation succeeds and evaluates in a 
 \vdash e : \tau \land \vdash e \Downarrow r \implies \exists v \colon \tau .~ r \equiv v,
 ```
 where
-- $\vdash e : \tau$ denotes (or, is implemented in) [`Tibi.HasType e τ`](./Tibi/Typing.lean), and
-- $\vdash e \Downarrow r$ denotes (or, is implemented in) [`Tibi.Eval e r`](./Tibi/Semantics.lean),
+- $\vdash e : \tau$ denotes [`Tibi.HasType e τ`](./Tibi/Typing.lean), and
+- $\vdash e \Downarrow r$ denotes [`Tibi.Eval e r`](./Tibi/Semantics.lean),
 
 ### Semantic Consistency
 
