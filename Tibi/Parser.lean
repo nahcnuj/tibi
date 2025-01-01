@@ -76,21 +76,21 @@ mutual
   partial def fn : Parser (Expr .nil <| .fn .int .int) :=
     (
       keyword "fun" >> ws >> keyword "x" >> ws >> keyword "." >> ws >> cls (Locals.stop) >> ws
-        |>.map fun (_, _, _, _, _, _, e, _) => Expr.Lam e
+        |>.map fun e => Expr.Lam e
     )
 
   partial def expr : Parser (Expr .nil .int) :=
     (
       natNumber >> ws -- >> ParserT.optional ((ParserT.char '@' : Parser _) >> keyword "Int" >> ws)
-        |>.map fun (n, _) => .Const n
+        |>.map fun n => .Const n
     )
     <|> (
       intNumber >> ws -- >> ParserT.optional ((ParserT.char '@' : Parser _) >> keyword "Int" >> ws)
-        |>.map fun (n, _) => .Const n
+        |>.map fun n => .Const n
     )
     <|> (
       fn >> ws >> expr >> ws
-        |>.map fun (f, _, e, _) => .App f e
+        |>.map fun (f, e) => .App f e
     )
     -- <|> (
     --   keyword "it" >> ws

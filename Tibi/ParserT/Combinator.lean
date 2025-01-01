@@ -13,6 +13,22 @@ def hAndThen (p : ParserT σ ε m α) (q : Unit → ParserT σ ε m β) : Parser
 instance : HAndThen (ParserT σ ε m α) (ParserT σ ε m β) (ParserT σ ε m (α × β)) where
   hAndThen := hAndThen
 
+def hAndThen' (p : ParserT σ ε m Unit) (q : Unit → ParserT σ ε m β) : ParserT σ ε m β :=
+  p
+  >>= fun _ => q ()
+  >>= fun b => ParserT.ok b
+
+instance : HAndThen (ParserT σ ε m Unit) (ParserT σ ε m β) (ParserT σ ε m β) where
+  hAndThen := hAndThen'
+
+def hAndThen'' (p : ParserT σ ε m α) (q : Unit → ParserT σ ε m Unit) : ParserT σ ε m α :=
+  p
+  >>= fun a => q ()
+  >>= fun _ => ParserT.ok a
+
+instance : HAndThen (ParserT σ ε m α) (ParserT σ ε m Unit) (ParserT σ ε m α) where
+  hAndThen := hAndThen''
+
 -- def hOrElse (p : ParserT σ ε m α) (q : Unit → ParserT σ ε m β) : ParserT σ ε m (α ⊕ β) :=
 --   fun cs =>
 --     ExceptT.tryCatch
