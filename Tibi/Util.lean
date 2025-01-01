@@ -14,4 +14,4 @@ inductive Vec (α : Type u) : Nat → Type u
 | nil : Vec α 0
 | cons : α → Vec α n → Vec α n.succ
 
-infix:67 " :: " => Vec.cons
+infixr:67 " :: " => Vec.cons

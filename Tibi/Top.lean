@@ -12,9 +12,9 @@ partial def repl (stream : IO.FS.Stream) (n : Nat := 0) : IO UInt32 := do
     if let some r := parseLine line then
       match r with
       | .ok (expr, []) =>
-          match expr.typeCheck .nil with
+          match expr.typeCheck with
           | .found t _ =>
-              match expr.eval .nil with
+              match expr.eval .nil () with
               | .found (.ok v) _    => IO.println s!"- : {t} = {v}"
               | .found (.error _) _ => panic! "TODO: prove that this branch cannot be reached (type-safe)"
               | .unknown            => panic! "TODO: prove that this branch cannot be reached (type-safe)"

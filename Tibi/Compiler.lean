@@ -8,6 +8,14 @@ open Wasm.Value
 
 inductive CompileError
 | OutOfBounds_Int64 (n : Int)
+| Unimplemented
+
+def CompileError.toString : CompileError → String
+| .OutOfBounds_Int64 n => s!"{n} is out of Int64 bounds, should be satisfied that -2{Nat.toSuperscriptString 63} ≤ n < 2{Nat.toSuperscriptString 63}"
+| .Unimplemented => "Unimplemented"
+
+instance : ToString CompileError where
+  toString := CompileError.toString
 
 def Expr.compile : Expr ctx ty → Except CompileError (List Wasm.Instr)
 | .Const n =>
@@ -17,9 +25,4 @@ def Expr.compile : Expr ctx ty → Except CompileError (List Wasm.Instr)
       .error <| .OutOfBounds_Int64 n
 | .Var x =>
     .ok [.local.get x.idx]
-
-def CompileError.toString : CompileError → String
-| .OutOfBounds_Int64 n => s!"{n} is out of Int64 bounds, should be satisfied that -2{Nat.toSuperscriptString 63} ≤ n < 2{Nat.toSuperscriptString 63}"
-
-instance : ToString CompileError where
-  toString := CompileError.toString
+| _ => .error .Unimplemented
