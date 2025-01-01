@@ -49,7 +49,7 @@ def Wasm.simple (c : List Instr) : Wasm :=
   .mk
     [⟨[], [Wasm.ValType.NumType .Int64]⟩]
     [0]
-    [⟨[], c⟩]
+    [⟨[(1, Wasm.ValType.NumType .Int64)], c⟩]
     [⟨"main", .Func 0⟩]
 
 def Wasm.build (w : Wasm) : ByteArray :=

@@ -62,7 +62,7 @@ private def intNumber : Parser Int :=
         | _ => sgn n
   )
 
-private def parser : Parser Expr :=
+private def parser : Parser (Expr .nil/-(.int :: .nil)-/ ty) :=
   (
     natNumber >> ws -- >> ParserT.optional ((ParserT.char '@' : Parser _) >> keyword "Int" >> ws)
       |>.map fun (n, _) => .Const n
@@ -71,11 +71,15 @@ private def parser : Parser Expr :=
     intNumber >> ws -- >> ParserT.optional ((ParserT.char '@' : Parser _) >> keyword "Int" >> ws)
       |>.map fun (n, _) => .Const n
   )
+  -- <|> (
+  --   keyword "it" >> ws
+  --     |>.map fun _ => .Var .stop
+  -- )
 
-instance : Inhabited (Parser Expr) where
+instance : Inhabited (Parser (Expr .nil/-(.int :: .nil)-/ ty)) where
   default := parser
 
-private partial def parse' : ReaderT (IO String) Parser Expr := do
+private partial def parse' : ReaderT (IO String) Parser (Expr .nil/-(.int :: .nil)-/ ty) := do
   fun getLine cs =>
     match parser cs with
     | .error .UnexpectedEndOfInput => do
@@ -90,13 +94,13 @@ private partial def parse' : ReaderT (IO String) Parser Expr := do
 -- #eval parse' (pure "9223372036854775808") "".data
 -- #eval parse' (pure "0120") "123".data
 
-def parse (stream : IO.FS.Stream) :=
+def parse (stream : IO.FS.Stream): IO (Option (ParserT.Result Char Parser.Error Id (Expr .nil/-(.int :: .nil)-/ .int))) :=
   stream.getLine >>= pure ∘ fun s =>
     match s.data with
     | [] => none
     | cs => some <| parse' stream.getLine cs
 
-def parseLine (line : String) :=
+def parseLine (line : String) : Option (ParserT.Result Char Parser.Error Id (Expr .nil/-(.int :: .nil)-/ .int)) :=
   match line.data with
   | [] => none
   | cs => some <| parse' (pure "") cs
