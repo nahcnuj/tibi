@@ -3,8 +3,11 @@ import Tibi.Typing
 
 namespace Tibi
 
--- theorem HasType.det (h₁ : HasType e t₁) (h₂ : HasType e t₂) : t₁ = t₂ := by
---   cases h₁ <;> cases h₂ <;> rfl
+theorem HasType.det : HasType e t₁ → HasType e t₂ → t₁ = t₂
+| .Int64 ..,  .Int64 ..    => rfl
+| .Var,       .Var         => rfl
+| .Lam h,     .Lam h'      => by rw [h.det h']
+| .App h₁ h₂, .App h₁' h₂' => h₂.det h₂' ▸ h₁.det h₁' |> Typ.Fn.inj |>.right
 
 /-
 theorem Expr.typeCheck_correct {e : Expr ctx ty}

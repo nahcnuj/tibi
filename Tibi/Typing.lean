@@ -6,13 +6,15 @@ import Tibi.Util
 namespace Tibi
 
 inductive Typ
+| Var (idx : Nat)
 | Int64
 | Fn (a : Typ) (b : Typ)
 deriving DecidableEq
 
 def Typ.toString : Typ → String
-| Int64  => "Int"
-| Fn a b => s!"{a.toString} -> {b.toString}"
+| Var idx => s!"α{idx}"
+| Int64   => "Int"
+| Fn a b  => s!"{a.toString} -> {b.toString}"
 
 instance : ToString Typ where
   toString := Typ.toString
@@ -25,7 +27,7 @@ def Ty.toTyp : Ty → Typ
 inductive HasType : Expr ctx ty → Typ → Prop
 | Int64 {n : Int} (hLt : n < Int64.size) (hGe : n ≥ -Int64.size) : HasType (.Const n) .Int64
 | Var {x : Locals i ctx ty} : HasType (.Var x) (Ty.cls ty ty).toTyp
-| Lam (h : HasType e t) : HasType (.Lam e) (.Fn dom t)
+| Lam (h : HasType e t) : HasType (.Lam e) (.Fn (.Var 0) t)
 | App (hf : HasType f (.Fn dom ran)) (hv : HasType v dom) : HasType (.App f v) ran
 
 def Expr.typeCheck : (e : Expr ctx ty) → {{ t | HasType e t }}
@@ -38,7 +40,7 @@ def Expr.typeCheck : (e : Expr ctx ty) → {{ t | HasType e t }}
     .found _ .Var
 | .Lam e =>
     match e.typeCheck with
-    | .found t h => .found (.Fn .Int64 t) <| .Lam h
+    | .found t h => .found (.Fn (.Var 0) t) <| .Lam h
     | .unknown   => .unknown
 | .App f v =>
     match f.typeCheck, v.typeCheck with
