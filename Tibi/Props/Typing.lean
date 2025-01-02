@@ -9,14 +9,30 @@ theorem HasType.det : HasType e t₁ → HasType e t₂ → t₁ = t₂
 | .Lam h,     .Lam h'      => by rw [h.det h']
 | .App h₁ h₂, .App h₁' h₂' => h₂.det h₂' ▸ h₁.det h₁' |> Typ.Fn.inj |>.right
 
-/-
+/--
+Reference: [A Certified Type Checker \- Lean Documentation Overview](https://lean-lang.org/lean4/doc/examples/tc.lean.html)
+-/
 theorem Expr.typeCheck_correct {e : Expr ctx ty}
-: (ht : HasType e t) → e.typeCheck = .found ty.toTyp ht
-| .Int64 (n := n) hLt hGe =>
-    have := eq_true <| And.intro (ge_iff_le.mp hGe) hLt
-    dite_cond_eq_true this
-| .Var => rfl
+  (ht : HasType e t)
+  (h : e.typeCheck ≠ .unknown)
+: e.typeCheck = .found t ht
+:= by
+  revert h
+  match e.typeCheck with
+  | .found ty' h₁' => intro ; have := ht.det h₁' ; subst this ; rfl
+  | .unknown       => intros; contradiction
+/-
+Try this: (match e.typeCheck with
+  | Maybe.found ty' h₁' => fun h =>
+    let_fun this := HasType.det ht h₁';
+    Eq.ndrec (motive := fun ty' =>
+      ∀ (h₁' : HasType e ty'), Maybe.found ty' h₁' ≠ Maybe.unknown → Maybe.found ty' h₁' = Maybe.found t ht)
+      (fun h₁' h => Eq.refl (Maybe.found t h₁')) this h₁' h
+  | Maybe.unknown => fun h => absurd (Eq.refl Maybe.unknown) h)
+  h
+-/
 
+/-
 theorem Expr.typeCheck_complete {e : Expr ctx ty}
 : e.typeCheck = .unknown → ¬ HasType e ty.toTyp
 := by
