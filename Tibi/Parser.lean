@@ -4,16 +4,20 @@ import Tibi.Syntax
 namespace Tibi
 
 inductive Parser.Error
-| ExpectedDigit (got : Char)
-| ExpectedNonZeroDigit (got : Char)
-| IOError (e : IO.Error)
+| ExpectedAsciiAlpha    (got : Char)
+| ExpectedAsciiAlphaNum (got : Char)
+| ExpectedDigit         (got : Char)
+| ExpectedNonZeroDigit  (got : Char)
+| IOError               (e : IO.Error)
 | Unconsumed (rest : String)
 
 def Parser.Error.toString : Parser.Error → String
-| ExpectedDigit got        => s!"Expected a digit, got '{got}'"
-| ExpectedNonZeroDigit got => s!"Expected a non-zero digit, got '{got}'"
-| IOError e                => s!"IO Error: {e}"
-| Unconsumed rest          => s!"\"{rest}\" was not consumed"
+| ExpectedAsciiAlpha got    => s!"Expected an ASCII alphabet character, got '{got}'"
+| ExpectedAsciiAlphaNum got => s!"Expected an ASCII alphanumeric character, got '{got}'"
+| ExpectedDigit got         => s!"Expected a digit, got '{got}'"
+| ExpectedNonZeroDigit got  => s!"Expected a non-zero digit, got '{got}'"
+| IOError e                 => s!"IO Error: {e}"
+| Unconsumed rest           => s!"\"{rest}\" was not consumed"
 
 instance : ToString Parser.Error where
   toString := Parser.Error.toString
@@ -65,21 +69,36 @@ private def intNumber : Parser Int :=
 private def enclose (pre : String) (p : Parser α) (post : String) : Parser α :=
   keyword pre >> ws >> p >> ws >> keyword post
 
+private def asciiAlpha : Parser Char :=
+  ParserT.satisfy Char.isAlpha .ExpectedAsciiAlpha
+
+private def asciiAlphanum : Parser Char :=
+  ParserT.satisfy Char.isAlphanum .ExpectedAsciiAlphaNum
+
+private def ident : Parser String :=
+  (
+    asciiAlpha >> ParserT.repeatGreedily asciiAlphanum
+      |>.map fun (c, cs) => String.mk (c :: cs)
+  )
+
+private def var : Parser String :=
+  keyword "$" >> ident
+
 instance : Inhabited (Parser (Expr ctx .int)) where
   default := intNumber.map Expr.Const
 
 mutual
 
-  partial def cls (x : Locals i ctx dom) : Parser (Expr ctx (.cls dom dom)) :=
+  partial def cls (x : Locals i ctx dom) : Parser (Expr ctx dom) :=
     (
-      keyword "$x" >> ws
+      var >> ws
         |>.map fun _ => .Var x
     )
 
   partial def fn : Parser (Expr ctx (.fn .int .int)) :=
     (
-      keyword "$" >> keyword "x" >> ws >> keyword "." >> ws >> cls (Locals.stop) >> ws
-        |>.map fun e => Expr.Lam e
+      var >> ws >> keyword "." >> ws >> cls (Locals.stop) >> ws
+        |>.map fun (_, e) => Expr.Lam e
     )
 
   partial def expr : Parser (Expr .nil .int) :=

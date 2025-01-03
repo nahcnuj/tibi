@@ -15,16 +15,21 @@ def Expr.eval (env : Env ctx) : {ty : Ty} → (e : Expr ctx ty) → ty.dom → {
         (fun h => .found (.error <| .OutOfBounds_Int64 n) <| Eval.ConstErr_lt h)
 | _, .Var x, _ =>
     .found (.ok <| env.lookup x) <| .Var x env
-| _, .Lam e', x =>
-    match e'.eval (x :: env) x with
+| .fn _ .int, .Lam e', x =>
+    match e'.eval (x :: env) () with
     | .found (.ok v) h => .found (.ok <| fun _ => v) <| .Lam h
-    | .unknown => .unknown
-| .int, .App (dom := .int) (.Lam e₁) e₂, _ =>
-    match e₂.eval env () with
-    | .found (.ok v) h₂ =>
-        match e₁.eval (v :: env) v with
-        | .found (.ok v) h₁ =>
-            .found (.ok <| v) <| .App h₁ h₂
-        | _ => .unknown
-    | _ => .unknown
-| _, _, _ => .unknown
+    | _                => .unknown
+| .int, .App (dom := dom) e₁ e₂, _ =>
+    match dom with
+    | .int => -- dom.dom = Unit
+        match e₂.eval env () with
+        | .found (.ok v) h₂ =>
+            match e₁.eval env v with
+            | .found (.ok f) h₁ => .found (.ok (f v)) <| .App h₁ h₂
+            | _                 => .unknown
+        | _ =>
+            .unknown
+    | _ =>
+        .unknown
+| _, _, _ =>
+    .unknown

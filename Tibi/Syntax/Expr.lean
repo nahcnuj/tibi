@@ -6,24 +6,20 @@ namespace Tibi
 inductive Ty where
 | int
 | fn (a b : Ty)
-| cls (a b : Ty)
 
 @[reducible]
 def Ty.interp : Ty → Type
-| int    => Int64
-| fn a b => a.interp → b.interp
-| cls _ b => b.interp
+| int     => Int64
+| fn a b  => a.interp → b.interp
 
 @[reducible]
 def Ty.dom : Ty → Type
-| int => Unit
-| fn a _ => a.interp
-| cls a _ => a.interp
+| int     => Unit
+| fn a _  => a.interp
 
 def Ty.toString : Ty → String
-| int    => "Int"
-| fn a b => s!"{a.toString} -> {b.toString}"
-| cls _ b => s!"{b.toString}"
+| int     => "Int"
+| fn a b  => s!"{a.toString} -> {b.toString}"
 
 instance : ToString Ty where
   toString := Ty.toString
@@ -41,8 +37,8 @@ instance : ToString (Locals n ctx ty) where
 
 inductive Expr : Vec Ty n → Ty → Type where
 | Const : Int → Expr ctx .int
-| Var   : Locals i ctx ty → Expr ctx (.cls ty ty)
-| Lam   : Expr (dom :: ctx) (.cls dom ran) → Expr ctx (.fn dom ran)
+| Var   : Locals i ctx ty → Expr ctx ty
+| Lam   : Expr (dom :: ctx) ran → Expr ctx (.fn dom ran)
 | App   : Expr ctx (.fn dom ran) → Expr ctx dom → Expr ctx ran
 
 def Expr.toString : Expr ctx ty → String

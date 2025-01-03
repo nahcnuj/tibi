@@ -26,5 +26,5 @@ inductive Eval : (Expr ctx ty) → Except EvalError ty.interp → Prop
   : Eval (.Var x) (.ok <| env.lookup x)
 | Lam (d : Eval e (.ok v))
   : Eval (.Lam e) (.ok <| fun _ => v)
-| App (d₁ : Eval e₁ (.ok v₁)) (d₂ : Eval e₂ (.ok v₂))
-  : Eval (.App (.Lam e₁) e₂) (.ok <| v₁)
+| App (d₁ : Eval e₁ (.ok f)) (d₂ : Eval e₂ (.ok x))
+  : Eval (.App e₁ e₂) (.ok <| f x)

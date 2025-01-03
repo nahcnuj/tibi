@@ -22,11 +22,10 @@ instance : ToString Typ where
 def Ty.toTyp : Ty → Typ
 | int     => .Int64
 | fn a b  => .Fn a.toTyp b.toTyp
-| cls _ b => b.toTyp
 
 inductive HasType : Expr ctx ty → Typ → Prop
 | Int64 {n : Int} (hLt : n < Int64.size) (hGe : n ≥ -Int64.size) : HasType (.Const n) .Int64
-| Var {x : Locals i ctx ty} : HasType (.Var x) (Ty.cls ty ty).toTyp
+| Var {x : Locals i ctx ty} : HasType (.Var x) ty.toTyp
 | Lam (h : HasType e t) : HasType (.Lam e) (.Fn .Int64/-(.Var 0)-/ t)
 | App (hf : HasType f (.Fn dom ran)) (hv : HasType v dom) : HasType (.App f v) ran
 
