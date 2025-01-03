@@ -104,10 +104,25 @@ end
 private partial def parse' : ReaderT (IO String) Parser (Expr .nil .int) := do
   fun getLine cs =>
     match expr cs with
-    | .error .UnexpectedEndOfInput => do
+    | .ok (e, []) =>
         match getLine () with
-        | .ok s _    => parse' getLine <| cs.append s.data
-        | .error e _ => Except.error <| Parser.Error.IOError e
+        | .ok s _    =>
+            if s.isEmpty then
+              .ok (e, [])
+            else
+              .error $ .ExpectedEndOfInput s.trimRight.data
+        | .error e _ =>
+            .error $ Parser.Error.IOError e
+    | .ok (_, cs) =>
+        .error $ .ExpectedEndOfInput cs
+    | .error .UnexpectedEndOfInput => -- continue to parse furthermore
+        match getLine () with
+        | .ok s _    =>
+            if s.isEmpty then
+              .error $ .UnexpectedEndOfInput
+            else
+              parse' getLine $ cs.append s.data
+        | .error e _ => .error $ Parser.Error.IOError e
     | v => v
 
 def parse (stream : IO.FS.Stream): IO (Option (ParserT.Result Char Parser.Error Id (Expr .nil .int))) :=
