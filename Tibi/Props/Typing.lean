@@ -34,15 +34,28 @@ Try this: (match e.typeCheck with
 
 /-
 theorem Expr.typeCheck_complete {e : Expr ctx ty}
-: e.typeCheck = .unknown → ¬ HasType e ty.toTyp
+: e.typeCheck = .unknown → ¬HasType e t
 := by
-  dsimp [Expr.typeCheck]
-  intro h (ht : HasType env e ty.toTyp)
-  match ht with
-  | .Int64 hLt hGe =>
-      simp at h
-      exact h hGe hLt
+  induction e with simp [Expr.typeCheck]
+  | Const n =>
+      intro h ht
+      match ht with
+      | .Int64 hLt hGe =>
+          have := h hGe hLt
+          contradiction
+  | Lam e ih =>
+      match h : e.typeCheck with
+      | .found t' ht' => intro ; contradiction
+      | .unknown =>
+          have : ¬HasType e t := ih h
+          intro _ ht'
+          match ht' with
+          | .Lam h' =>
+              sorry
+  | App e₁ e₂ ih₁ ih₂ => sorry
+-/
 
+/-
 instance (e : Expr ctx ty) (t : Typ) : Decidable (HasType e t) :=
   match h : e.typeCheck with
   | .found t' ht' =>
@@ -51,7 +64,9 @@ instance (e : Expr ctx ty) (t : Typ) : Decidable (HasType e t) :=
       else
         isFalse fun ht => heq (HasType.det ht ht')
   | .unknown => isFalse (Expr.typeCheck_complete h)
+-/
 
+/-
 theorem type_safe {e : Expr ctx ty}
 : HasType e t → Eval e r → ∃ v, r = .ok v
 | .Int64 hLt hGe, .Const ..      => ⟨Int64.mk ⟨_, hLt, hGe⟩, rfl⟩
