@@ -32,6 +32,7 @@ Try this: (match e.typeCheck with
   h
 -/
 
+-- TODO prove Expr.typeCheck_complete
 /-
 theorem Expr.typeCheck_complete {e : Expr ctx ty}
 : e.typeCheck = .unknown → ¬HasType e t
@@ -55,6 +56,7 @@ theorem Expr.typeCheck_complete {e : Expr ctx ty}
   | App e₁ e₂ ih₁ ih₂ => sorry
 -/
 
+-- TODO prove : Decidable (HasType e t)
 /-
 instance (e : Expr ctx ty) (t : Typ) : Decidable (HasType e t) :=
   match h : e.typeCheck with
@@ -66,6 +68,7 @@ instance (e : Expr ctx ty) (t : Typ) : Decidable (HasType e t) :=
   | .unknown => isFalse (Expr.typeCheck_complete h)
 -/
 
+-- TODO prove type_safe
 /-
 theorem type_safe {e : Expr ctx ty}
 : HasType e t → Eval e r → ∃ v, r = .ok v

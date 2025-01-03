@@ -4,6 +4,7 @@ import Tibi.Wasm.Semantics
 
 namespace Tibi
 
+-- TODO prove Wasm.Reduction.of_has_type_of_eval_ok_of_compile_ok
 /-
 type mismatch
   Wasm.Reduction.local__get ↑x.idx
