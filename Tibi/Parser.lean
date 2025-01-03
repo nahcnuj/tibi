@@ -62,20 +62,23 @@ private def intNumber : Parser Int :=
         | _ => sgn n
   )
 
-instance : Inhabited (Parser (Expr .nil .int)) where
+private def enclose (pre : String) (p : Parser α) (post : String) : Parser α :=
+  keyword pre >> ws >> p >> ws >> keyword post
+
+instance : Inhabited (Parser (Expr ctx .int)) where
   default := intNumber.map Expr.Const
 
 mutual
 
-  partial def cls (x : Locals i ctx ran) : Parser (Expr ctx <| .cls ran ran) :=
+  partial def cls (x : Locals i ctx dom) : Parser (Expr ctx (.cls dom dom)) :=
     (
-      keyword "x" >> ws
+      keyword "$x" >> ws
         |>.map fun _ => .Var x
     )
 
-  partial def fn : Parser (Expr .nil <| .fn .int .int) :=
+  partial def fn : Parser (Expr ctx (.fn .int .int)) :=
     (
-      keyword "fun" >> ws >> keyword "x" >> ws >> keyword "." >> ws >> cls (Locals.stop) >> ws
+      keyword "$" >> keyword "x" >> ws >> keyword "." >> ws >> cls (Locals.stop) >> ws
         |>.map fun e => Expr.Lam e
     )
 
@@ -89,7 +92,7 @@ mutual
         |>.map fun n => .Const n
     )
     <|> (
-      fn >> ws >> expr >> ws
+      enclose "(" fn ")" >> ws >> expr >> ws
         |>.map fun (f, e) => .App f e
     )
     -- <|> (
@@ -106,12 +109,6 @@ private partial def parse' : ReaderT (IO String) Parser (Expr .nil .int) := do
         | .ok s _    => parse' getLine <| cs.append s.data
         | .error e _ => Except.error <| Parser.Error.IOError e
     | v => v
-
--- #eval parse' (pure "0120") "123".data
--- #eval parse' (pure "-1") "".data
--- #eval parse' (pure "9223372036854775808") "".data
--- #eval parse' (pure "9223372036854775808") "".data
--- #eval parse' (pure "0120") "123".data
 
 def parse (stream : IO.FS.Stream): IO (Option (ParserT.Result Char Parser.Error Id (Expr .nil .int))) :=
   stream.getLine >>= pure ∘ fun s =>

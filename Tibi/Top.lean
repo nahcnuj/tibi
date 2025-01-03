@@ -6,7 +6,7 @@ import Tibi.Typing
 namespace Tibi
 
 partial def repl (stream : IO.FS.Stream) (n : Nat := 0) : IO UInt32 := do
-  IO.print s!"{n}:> "
+  if ← stream.isTty then IO.print s!"{n}:> "
   let line ← stream.getLine
   if not line.isEmpty then
     if let some r := parseLine line then
