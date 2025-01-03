@@ -6,7 +6,7 @@ import Tibi.Typing
 namespace Tibi
 
 partial def repl (stream : IO.FS.Stream) (n : Nat := 0) : IO UInt32 := do
-  IO.print s!"{n}:> "
+  if ← stream.isTty then IO.print s!"{n}:> "
   let line ← stream.getLine
   if not line.isEmpty then
     if let some r := parseLine line then
@@ -14,7 +14,7 @@ partial def repl (stream : IO.FS.Stream) (n : Nat := 0) : IO UInt32 := do
       | .ok (expr, []) =>
           match expr.typeCheck with
           | .found t _ =>
-              match expr.eval with
+              match expr.eval .nil () with
               | .found (.ok v) _    => IO.println s!"- : {t} = {v}"
               | .found (.error _) _ => panic! "TODO: prove that this branch cannot be reached (type-safe)"
               | .unknown            => panic! "TODO: prove that this branch cannot be reached (type-safe)"
@@ -37,7 +37,7 @@ def run (inStream : IO.FS.Stream) : IO ByteArray :=
       | .some <| .error e       => .throw e.toString
   )
   >>= (
-    fun (e : Option Expr) =>
+    fun (e : Option (Expr _ _)) =>
       match e with
       | .none   => pure Wasm.empty
       | .some e =>

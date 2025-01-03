@@ -18,6 +18,9 @@ inductive Num
 inductive Value
 | Num (n : Num)
 
+instance : Inhabited Value where
+  default := .Num (.Int64 (Tibi.Int64.ofFin 0))
+
 /- ### Activation Frames -/
 
 structure FrameState where

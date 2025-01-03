@@ -4,16 +4,20 @@ import Tibi.Syntax
 namespace Tibi
 
 inductive Parser.Error
-| ExpectedDigit (got : Char)
-| ExpectedNonZeroDigit (got : Char)
-| IOError (e : IO.Error)
+| ExpectedAsciiAlpha    (got : Char)
+| ExpectedAsciiAlphaNum (got : Char)
+| ExpectedDigit         (got : Char)
+| ExpectedNonZeroDigit  (got : Char)
+| IOError               (e : IO.Error)
 | Unconsumed (rest : String)
 
 def Parser.Error.toString : Parser.Error → String
-| ExpectedDigit got        => s!"Expected a digit, got '{got}'"
-| ExpectedNonZeroDigit got => s!"Expected a non-zero digit, got '{got}'"
-| IOError e                => s!"IO Error: {e}"
-| Unconsumed rest          => s!"\"{rest}\" was not consumed"
+| ExpectedAsciiAlpha got    => s!"Expected an ASCII alphabet character, got '{got}'"
+| ExpectedAsciiAlphaNum got => s!"Expected an ASCII alphanumeric character, got '{got}'"
+| ExpectedDigit got         => s!"Expected a digit, got '{got}'"
+| ExpectedNonZeroDigit got  => s!"Expected a non-zero digit, got '{got}'"
+| IOError e                 => s!"IO Error: {e}"
+| Unconsumed rest           => s!"\"{rest}\" was not consumed"
 
 instance : ToString Parser.Error where
   toString := Parser.Error.toString
@@ -62,41 +66,91 @@ private def intNumber : Parser Int :=
         | _ => sgn n
   )
 
-private def parser : Parser Expr :=
+private def enclose (pre : String) (p : Parser α) (post : String) : Parser α :=
+  keyword pre >> ws >> p >> ws >> keyword post
+
+private def asciiAlpha : Parser Char :=
+  ParserT.satisfy Char.isAlpha .ExpectedAsciiAlpha
+
+private def asciiAlphanum : Parser Char :=
+  ParserT.satisfy Char.isAlphanum .ExpectedAsciiAlphaNum
+
+private def ident : Parser String :=
   (
-    natNumber >> ws -- >> ParserT.optional ((ParserT.char '@' : Parser _) >> keyword "Int" >> ws)
-      |>.map fun (n, _) => .Const n
-  )
-  <|> (
-    intNumber >> ws -- >> ParserT.optional ((ParserT.char '@' : Parser _) >> keyword "Int" >> ws)
-      |>.map fun (n, _) => .Const n
+    asciiAlpha >> ParserT.repeatGreedily asciiAlphanum
+      |>.map fun (c, cs) => String.mk (c :: cs)
   )
 
-instance : Inhabited (Parser Expr) where
-  default := parser
+private def var : Parser String :=
+  keyword "$" >> ident
 
-private partial def parse' : ReaderT (IO String) Parser Expr := do
+instance : Inhabited (Parser (Expr ctx .int)) where
+  default := intNumber.map Expr.Const
+
+mutual
+
+  partial def cls (x : Locals i ctx dom) : Parser (Expr ctx dom) :=
+    (
+      var >> ws
+        |>.map fun _ => .Var x
+    )
+
+  partial def fn : Parser (Expr ctx (.fn .int .int)) :=
+    (
+      var >> ws >> keyword "." >> ws >> cls (Locals.stop) >> ws
+        |>.map fun (_, e) => Expr.Lam e
+    )
+
+  partial def expr : Parser (Expr .nil .int) :=
+    (
+      natNumber >> ws -- >> ParserT.optional ((ParserT.char '@' : Parser _) >> keyword "Int" >> ws)
+        |>.map fun n => .Const n
+    )
+    <|> (
+      intNumber >> ws -- >> ParserT.optional ((ParserT.char '@' : Parser _) >> keyword "Int" >> ws)
+        |>.map fun n => .Const n
+    )
+    <|> (
+      enclose "(" fn ")" >> ws >> expr >> ws
+        |>.map fun (f, e) => .App f e
+    )
+    -- <|> (
+    --   keyword "it" >> ws
+    --     |>.map fun _ => .Var .stop
+    -- )
+end
+
+private partial def parse' : ReaderT (IO String) Parser (Expr .nil .int) := do
   fun getLine cs =>
-    match parser cs with
-    | .error .UnexpectedEndOfInput => do
+    match expr cs with
+    | .ok (e, []) =>
         match getLine () with
-        | .ok s _    => parse' getLine <| cs.append s.data
-        | .error e _ => Except.error <| Parser.Error.IOError e
+        | .ok s _    =>
+            if s.isEmpty then
+              .ok (e, [])
+            else
+              .error $ .ExpectedEndOfInput s.trimRight.data
+        | .error e _ =>
+            .error $ Parser.Error.IOError e
+    | .ok (_, cs) =>
+        .error $ .ExpectedEndOfInput cs
+    | .error .UnexpectedEndOfInput => -- continue to parse furthermore
+        match getLine () with
+        | .ok s _    =>
+            if s.isEmpty then
+              .error $ .UnexpectedEndOfInput
+            else
+              parse' getLine $ cs.append s.data
+        | .error e _ => .error $ Parser.Error.IOError e
     | v => v
 
--- #eval parse' (pure "0120") "123".data
--- #eval parse' (pure "-1") "".data
--- #eval parse' (pure "9223372036854775808") "".data
--- #eval parse' (pure "9223372036854775808") "".data
--- #eval parse' (pure "0120") "123".data
-
-def parse (stream : IO.FS.Stream) :=
+def parse (stream : IO.FS.Stream): IO (Option (ParserT.Result Char Parser.Error Id (Expr .nil .int))) :=
   stream.getLine >>= pure ∘ fun s =>
     match s.data with
     | [] => none
     | cs => some <| parse' stream.getLine cs
 
-def parseLine (line : String) :=
+def parseLine (line : String) : Option (ParserT.Result Char Parser.Error Id (Expr .nil .int)) :=
   match line.data with
   | [] => none
   | cs => some <| parse' (pure "") cs
