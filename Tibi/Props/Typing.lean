@@ -11,7 +11,9 @@ theorem HasType.det (h₁ : HasType e t₁) (h₂ : HasType e t₂) : t₁ = t�
   | App _ _ ihf _ =>
       cases h₂ with
       | App hf' _ =>
-          exact (Typ.Fn.inj (ihf hf')).2
+          have h := ihf hf'
+          simp only [Typ.Fn.injEq] at h
+          exact h.2
 
 theorem Expr.typeCheck_correct : (ht : HasType e t) → e.typeCheck = .found t ht
 | .Int64 (n := n) hLt hGe =>

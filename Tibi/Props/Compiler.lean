@@ -16,3 +16,5 @@ theorem Wasm.Reduction.of_has_type_of_eval_ok_of_compile_ok -- Expr.compile_ok_o
     have : instrs = [.i64__const ⟨n, hLt, hGe⟩ ] := Except.ok.inj <| Eq.trans hc.symm this
     rw [this]
     exact .i64__const
+| .Var, .Var _ _, hc => by simp [Expr.compile] at hc
+| .App _ _, .App _ _, hc => by simp [Expr.compile] at hc
