@@ -20,14 +20,13 @@ theorem Expr.typeCheck_correct : (ht : HasType e t) → e.typeCheck = .found t h
     have := eq_true <| And.intro (ge_iff_le.mp hGe) hLt
     dite_cond_eq_true this
 | .Var => rfl
-| .Lam h =>
+| .Lam h => by
     have ih := typeCheck_correct h
     simp only [Expr.typeCheck, ih]
 | .App hf hv => by
     have ihf := typeCheck_correct hf
     have ihv := typeCheck_correct hv
-    simp only [Expr.typeCheck, ihf, ihv]
-    exact dif_pos rfl
+    simp [Expr.typeCheck, ihf, ihv]
 
 theorem Expr.typeCheck_complete {e : Expr ctx ty}
 : e.typeCheck = .unknown → ¬ HasType e t

@@ -4,7 +4,7 @@ import Tibi.Wasm.Semantics
 
 namespace Tibi
 
-theorem Wasm.Reduction.of_has_type_of_eval_ok_of_compile_ok -- Expr.compile_ok_of_has_type_of_eval
+theorem Wasm.Reduction.of_has_type_of_eval_ok_of_compile_ok {e : Expr ctx .int} -- Expr.compile_ok_of_has_type_of_eval
 : HasType e _ty → Eval e (.ok v) → e.compile = .ok instrs
 → Wasm.Reduction
     { instrs := instrs ++ K, stack,                                      store, framestate }
@@ -16,5 +16,4 @@ theorem Wasm.Reduction.of_has_type_of_eval_ok_of_compile_ok -- Expr.compile_ok_o
     have : instrs = [.i64__const ⟨n, hLt, hGe⟩ ] := Except.ok.inj <| Eq.trans hc.symm this
     rw [this]
     exact .i64__const
-| .Var, .Var _ _, hc => by simp [Expr.compile] at hc
 | .App _ _, .App _ _, hc => by simp [Expr.compile] at hc
