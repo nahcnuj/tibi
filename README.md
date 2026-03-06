@@ -71,18 +71,25 @@ You can see the returned integer in the `pre` element.
 ### Syntax
 
 ```ebnf
-            ws = { " " | "\n" | "\r" | "\t" } ;
+             ws = { " " | "\n" | "\r" | "\t" } ;
 
-non-zero-digit = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
-         digit = "0" | non-zero-digit ;
-    nat-number = "0"
-               | non-zero-digit , { digit } ;
+ non-zero-digit = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+          digit = "0" | non-zero-digit ;
+     nat-number = "0"
+                | non-zero-digit , { digit } ;
 
-          sign = "+" | "-" ;
-    int-number = sign , nat-number ;
+           sign = "+" | "-" ;
+     int-number = sign , nat-number ;
 
-          expr = nat-number , ws
-               | int-number , ws;
+     identifier = ( letter | "_" ) , { letter | digit | "_" } ;
+         letter = "a" | ... | "z" | "A" | ... | "Z" ;
+
+           expr = nat-number , ws
+                | int-number , ws
+                | identifier , ws                              (* variable -- not yet implemented in parser *)
+                | "\" , identifier , "." , ws , expr , ws     (* lambda abstraction -- not yet implemented in parser *)
+                | expr , expr , ws                            (* function application -- not yet implemented in parser *)
+                ;
 ```
 
 <!--

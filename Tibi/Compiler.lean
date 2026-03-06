@@ -17,8 +17,8 @@ def Expr.compile : Expr ctx ty → Except CompileError (List Wasm.Instr)
     else
       .error <| .OutOfBounds_Int64 n
 | .Var _ =>
-    .error .Unimplemented
-| _ => .error .Unimplemented
+    .error .Unimplemented -- TODO: implement compilation of variable expressions
+| _ => .error .Unimplemented -- TODO: implement compilation of lambda and application expressions
 
 def CompileError.toString : CompileError → String
 | .OutOfBounds_Int64 n => s!"{n} is out of Int64 bounds, should be satisfied that -2{Nat.toSuperscriptString 63} ≤ n < 2{Nat.toSuperscriptString 63}"
