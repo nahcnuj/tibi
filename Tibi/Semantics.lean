@@ -1,4 +1,5 @@
 import Tibi.FinInt
+import Tibi.Semantics.Env
 import Tibi.Syntax
 
 namespace Tibi
@@ -6,10 +7,19 @@ namespace Tibi
 inductive EvalError
 | OutOfBounds_Int64 (n : Int)
 
-inductive Eval : Expr → Except EvalError Int64 → Prop
-| Const       {n : Int} (hLt : n < Int64.size) (hGe : n >= -Int64.size) : Eval (.Const n) (.ok <| Int64.mk ⟨n, hLt, hGe⟩)
-| ConstErr_lt {n : Int} (h : ¬ n < Int64.size)   : Eval (.Const n) (.error <| .OutOfBounds_Int64 n)
-| ConstErr_ge {n : Int} (h : ¬ n >= -Int64.size) : Eval (.Const n) (.error <| .OutOfBounds_Int64 n)
+inductive Eval : (Expr ctx ty) → Except EvalError ty.interp → Prop
+| Const {n : Int} (hLt : n < Int64.size) (hGe : n >= -Int64.size)
+  : Eval (.Const n) (.ok <| Int64.mk ⟨n, hLt, hGe⟩)
+| ConstErr_lt {n : Int} (h : ¬ n < Int64.size)
+  : Eval (.Const n) (.error <| .OutOfBounds_Int64 n)
+| ConstErr_ge {n : Int} (h : ¬ n >= -Int64.size)
+  : Eval (.Const n) (.error <| .OutOfBounds_Int64 n)
+| Var (x : Locals k ctx ty) (env : Env ctx)
+  : Eval (.Var x) (.ok <| env.lookup x)
+| Lam (d : Eval e (.ok v))
+  : Eval (.Lam e) (.ok <| fun _ => v)
+| App (d₁ : Eval e₁ (.ok v₁)) (d₂ : Eval e₂ (.ok v₂))
+  : Eval (.App (.Lam e₁) e₂) (.ok <| v₁)
 
 def EvalError.toString : EvalError → String
 | .OutOfBounds_Int64 n => s!"{n} is out of Int64 bounds, should be satisfied that -2{Nat.toSuperscriptString 63} ≤ n < 2{Nat.toSuperscriptString 63}"

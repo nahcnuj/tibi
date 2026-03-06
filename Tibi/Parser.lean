@@ -62,7 +62,7 @@ private def intNumber : Parser Int :=
         | _ => sgn n
   )
 
-private def parser : Parser Expr :=
+private def parser : Parser (Expr .nil .int) :=
   (
     natNumber >> ws -- >> ParserT.optional ((ParserT.char '@' : Parser _) >> keyword "Int" >> ws)
       |>.map fun (n, _) => .Const n
@@ -72,10 +72,10 @@ private def parser : Parser Expr :=
       |>.map fun (n, _) => .Const n
   )
 
-instance : Inhabited (Parser Expr) where
+instance : Inhabited (Parser (Expr .nil .int)) where
   default := parser
 
-private partial def parse' : ReaderT (IO String) Parser Expr := do
+private partial def parse' : ReaderT (IO String) Parser (Expr .nil .int) := do
   fun getLine cs =>
     match parser cs with
     | .error .UnexpectedEndOfInput => do
