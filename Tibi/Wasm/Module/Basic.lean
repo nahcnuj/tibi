@@ -36,7 +36,7 @@ open Wasm (Code Export FuncType Section)
 def Wasm.magic : List UInt8 := [0x00, 0x61, 0x73, 0x6D]
 def Wasm.version : List UInt8 := [0x01, 0x00, 0x00, 0x00]
 
--- TODO https://webassembly.github.io/spec/core/syntax/modules.html#syntax-module
+-- XXX https://webassembly.github.io/spec/core/syntax/modules.html#syntax-module
 structure Wasm where
   types : List FuncType
   funcs : List Nat

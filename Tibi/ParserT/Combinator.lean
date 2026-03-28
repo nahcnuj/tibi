@@ -13,6 +13,12 @@ def hAndThen (p : ParserT σ ε m α) (q : Unit → ParserT σ ε m β) : Parser
 instance : HAndThen (ParserT σ ε m α) (ParserT σ ε m β) (ParserT σ ε m (α × β)) where
   hAndThen := hAndThen
 
+instance : HAndThen (ParserT σ ε m Unit) (ParserT σ ε m β) (ParserT σ ε m β) where
+  hAndThen p q := p.hAndThen q >>= pure ∘ Prod.snd
+
+instance : HAndThen (ParserT σ ε m α) (ParserT σ ε m Unit) (ParserT σ ε m α) where
+  hAndThen p q := p.hAndThen q >>= pure ∘ Prod.fst
+
 -- def hOrElse (p : ParserT σ ε m α) (q : Unit → ParserT σ ε m β) : ParserT σ ε m (α ⊕ β) :=
 --   fun cs =>
 --     ExceptT.tryCatch
